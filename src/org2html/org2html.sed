@@ -10,8 +10,8 @@ s~^\*\*\* \(.*\)~<h4>\1</h4>~
 /^#+BEGIN_SRC/,/#+END_SRC/ {
   s~^#+BEGIN_SRC .*~<pre class="prettyprint">~
   s~^#+END_SRC~</pre>~
-  # TODO indent contents
 
+  # indent contents
   /^[^<]/ {
     s/^/  /
   }
