@@ -6,15 +6,20 @@ footer_file=$(dirname $0)/footer.html
 output_file=$(mktemp)
 src_dir=$HOME/src/skybert-net/src
 
+source ../common-lib/indispensable.sh || {
+  echo "indispensible.sh is indispensible for $(basename $0)"
+  exit 1
+}
+
 function create_target_dir() {
   local dir_fragment=$(echo $1 | sed "s#${src_dir}/##")
   target_dir=$(dirname $src_dir)/generated/${dir_fragment}
-  mkdir -p $target_dir
+  make_dir $target_dir
 }
 
 function fix_title() {
   title=$(sed -n 's/^#+TITLE: \(.*\)/\1/p' $1)
-  sed -i "s~<title>\(.*\)</title>~<title>${title}</title>~" $output_file
+  run sed -i "s~<title>\(.*\)</title>~<title>${title}</title>~" $output_file
 }
 
 function get_file_name() {
@@ -35,8 +40,8 @@ function convert_file() {
 
   final_fn=${target_dir}/$(get_file_name).html
   cat $output_file | xmllint --format - > $final_fn
-  rm $output_file
-  echo $final_fn "is now ready"
+  run rm $output_file
+  print $final_fn "is now ready"
 }
 
 find $src_dir -name "*.org" | while read f; do
