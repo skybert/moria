@@ -4,7 +4,9 @@ header_file=$(dirname $0)/header.html
 footer_file=$(dirname $0)/footer.html
 
 output_file=$(mktemp)
-src_dir=$HOME/src/skybert-net/src
+
+src_dir=$HOME/src/skybert-net
+org_src_dir=${src_dir}/src
 
 source ../common-lib/indispensable.sh || {
   echo "indispensible.sh is indispensible for $(basename $0)"
@@ -12,8 +14,8 @@ source ../common-lib/indispensable.sh || {
 }
 
 function create_target_dir() {
-  local dir_fragment=$(echo $1 | sed "s#${src_dir}/##")
-  target_dir=$(dirname $src_dir)/generated/${dir_fragment}
+  local dir_fragment=$(echo $1 | sed -e "s#${org_src_dir}/##" -e "s/.org$//")
+  target_dir=$(dirname $org_src_dir)/generated/$(dirname ${dir_fragment})/$(get_file_name)
   make_dir $target_dir
 }
 
@@ -35,15 +37,29 @@ function convert_org_to_html() {
 
 function convert_file() {
   convert_org_to_html $1
-  create_target_dir $1
   fix_title $1
+  create_target_dir $1
 
-  final_fn=${target_dir}/$(get_file_name).html
+  final_fn=${target_dir}/index.shtml
   cat $output_file | xmllint --format - > $final_fn
   run rm $output_file
   print $final_fn "is now ready"
 }
 
-find $src_dir -name "*.org" | while read f; do
+function remove_old_generated_files() {
+  if [ -d $src_dir/generated ]; then
+    run rm -r $src_dir/generated
+  fi
+}
+
+remove_old_generated_files
+
+start_time=$(date +%s)
+i=0
+for f in $(find $org_src_dir -name "*.org"); do
   convert_file "$f"
+  i=$((i + 1))
 done
+end_time=$(date +%s)
+
+print "I converted" $i "org files to HTML in" $((end_time - start_time)) "seconds"
