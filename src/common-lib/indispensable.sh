@@ -18,3 +18,11 @@ function run() {
 function print() {
   echo "$@"
 }
+
+function make_dir() {
+  for el in "$@"; do
+    if [ ! -d "$el" ]; then
+      run mkdir -p "$el"
+    fi
+  done
+}
