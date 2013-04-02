@@ -38,8 +38,24 @@ s~=\(.*\)=~<code>\1</code>~
   }
 }
 
-# pictures
-s~^\[\[\(.*\)\]\]~<div><img src="\1" alt="\1"/></div>~g
+s~^\[\[~\n\[\[~
+
+# pictures & links
+/\[\[/,/\]\]/ {
+  # with alt
+  s~\[\[\(.*.png\)\]\[\(.*\)\]\]~<div><img src="\1" alt="\2"/></div>~g
+  s~\[\[\(.*.jpg\)\]\[\(.*\)\]\]~<div><img src="\1" alt="\2"/></div>~g
+
+  # without alt
+  s~\[\[\(.*.png\)\]\]~<div><img src="\1" alt="\1"/></div>~g
+  s~\[\[\(.*.jpg\)\]\]~<div><img src="\1" alt="\1"/></div>~g
+
+  # links with titles
+  s~\[\[\(.*\)\]\[\(.*\)\]\]~<a href="\1">\2</a>~g
+
+  # links without titles
+  s~\[\[\(.*\)\]\]~<a href="\1">\1</a>~g
+}
 
 # paragraphs
 /^$/,/^[A-Z]/ {
