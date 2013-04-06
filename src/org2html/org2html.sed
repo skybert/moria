@@ -1,5 +1,13 @@
 #! /usr/bin/env sed
 
+# fix entities
+s~<~\&lt;~g
+s~>~\&gt;~g
+
+# bold & italics
+s~\*\(.*\)\*~<strong>\1</strong>~g
+s~_\(.*\)_~<em>\1</em>~g
+
 # headers
 s~^#+TITLE: \(.*\)~<h1>\1</h1>~
 s~^\* \(.*\)~<h2>\1</h2>~
@@ -68,11 +76,6 @@ s~^\[\[~\n\[\[~
   /^$/ {
     i </p>
   }
-}
-
-# fix entities
-/^[ ]*[<]{1}/ {
-
 }
 
 # Lastly, remove empty lines
