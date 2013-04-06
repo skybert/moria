@@ -2,6 +2,10 @@
 
 # by torstein.k.johansen@gmail.com
 
+# You may override this log file in your script, otherwise, you'll get
+# a log file called .<myscript>.log in your home directory.
+log_file=$HOME/.$(basename $0).log
+
 function run() {
   if [[ -n "$log_file" ]]; then
     "$@" 1>> $log_file 2>> $log_file
