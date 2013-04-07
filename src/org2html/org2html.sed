@@ -24,6 +24,15 @@ s~^\*\*\* \(.*\)~<h4>\1</h4>~
     s/^/  /
   }
 }
+/^#+begin_src/,/#+end_src/ {
+  s~^#+begin_src .*~<pre class="prettyprint">~
+  s~^#+end_src~</pre>~
+
+  # indent contents
+  /^[^<]/ {
+    s/^/  /
+  }
+}
 
 # monotype
 s~=\(.*\)=~<code>\1</code>~
