@@ -23,6 +23,11 @@ function print() {
   echo "$@"
 }
 
+function print_and_log() {
+  echo "$@"
+  echo "$@" >> $log_file
+}
+
 function make_dir() {
   for el in "$@"; do
     if [ ! -d "$el" ]; then
