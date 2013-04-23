@@ -26,7 +26,8 @@ function print() {
 function print_and_log() {
   echo "$@"
   if [[ -n "$log_file" || -w $(dirname $log_file)]]; then
-  echo "$@" >> $log_file
+    echo "$@" >> $log_file
+  fi
 }
 
 function make_dir() {
