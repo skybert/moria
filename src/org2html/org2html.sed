@@ -29,7 +29,7 @@ s~^\*\*\* \(.*\)~<h4>\1</h4>~
   s~^#+begin_src .*~<pre class="prettyprint">~
   s~^#+end_src~</pre>~
 
-  # indent contents
+  # indent contents, except for lines starting with a '<'
   /^[^<]/ {
     s/^/  /
   }
