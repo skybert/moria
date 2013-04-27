@@ -1,0 +1,33 @@
+#! /usr/bin/env bash
+
+file=$1
+out_file=/tmp/test.org
+echo "" > $out_file
+
+sed -n -f $(dirname $0)/ics2org.sed $file | while read line; do
+  if [ $(echo "$line" | grep ^'SCHEDULED' | wc -l) -gt 0 ]; then
+    start_time="$line"
+  fi
+  if [ $(echo "$line" | grep ^'\*\*' | wc -l) -gt 0 ]; then
+    summary="$line"
+  fi
+  
+  if [[ -n "${summary}" && -n "${start_time}" ]]; then
+    if [ $(date +%Y%m%d) -gt ${start_time:12:4}${start_time:17:2}${start_time:20:2}  ]; then
+      summary=""
+      start_time=""
+      continue
+    fi
+    echo date=${start_time:12:4}${start_time:17:2}${start_time:20:2}
+
+    
+  cat >> $out_file <<EOF
+${summary}
+   ${start_time}
+EOF
+  summary=""
+  start_time=""
+fi
+done
+
+echo $out_file is ready
