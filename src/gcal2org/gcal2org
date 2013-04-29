@@ -5,6 +5,8 @@
 #
 # Usage:
 # gcal2org > ~/doc/my-google-calendar.org
+#
+# by torstein.k.johansen at gmail dot com
 
 # pre-requisites:
 # (1) Google CLI
