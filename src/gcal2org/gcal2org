@@ -23,6 +23,7 @@ google --version 2&>1 /dev/null || {
   exit 1
 }
 
+echo '*' "${USER}'s calendar"
 google \
   calendar \
   list \
