@@ -11,7 +11,7 @@
 # (2) requires ~/.config/googlecl/config to have date format set like
 # this: date_print_format = %Y-%m-%d %H:%M
 
-source ../common-lib/indispensable.sh || {
+source $(dirname $0)/../common-lib/indispensable.sh || {
   echo "indispensible.sh is indispensible for $(basename $0)"
   exit 1
 }
