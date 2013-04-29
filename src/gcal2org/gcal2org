@@ -1,0 +1,39 @@
+#! /usr/bin/env bash
+
+# Command for creating an org file with diary entries from Google
+# Calendar.
+#
+# Usage:
+# gcal2org > ~/doc/my-google-calendar.org
+
+# pre-requisites:
+# (1) Google CLI
+# (2) requires ~/.config/googlecl/config to have date format set like
+# this: date_print_format = %Y-%m-%d %H:%M
+
+source ../common-lib/indispensable.sh || {
+  echo "indispensible.sh is indispensible for $(basename $0)"
+  exit 1
+}
+
+google --version 2&>1 /dev/null || {
+  echo "You need to have google (CLI) installed to use $(basename $0)"
+  exit 1
+}
+
+google \
+  calendar \
+  list \
+  --fields title,when,where \
+  --delimiter " ~ " | \
+  grep $(date +%Y) | while read f; do
+  IFS='~' read title when where <<< "${f}"
+  IFS=' ' read from_date from_time dash to_date to_time <<< "$when"
+  if [[ "${from_time}" != "00:00" ]]; then
+    echo '** TODO' ${from_time}-${to_time} ${title}
+  else
+    echo '** TODO' ${title}
+  fi
+  echo '   SCHEDULED: <'${from_date}'>'
+  echo ''
+done
