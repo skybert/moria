@@ -1,8 +1,7 @@
 #! /usr/bin/env bash
 
-# Command which searches all JAR files for a given class.
-
-# by torstein.k.johansen at gmail.com
+## Command which searches all JAR files for a given class.
+## by torstein.k.johansen at gmail.com
 
 if [ $# -ne 2 ]; then
   echo "Usage: $(basename $0) <dir> <class>"
