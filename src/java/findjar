@@ -1,0 +1,25 @@
+#! /usr/bin/env bash
+
+# Command which searches all JAR files for a given class.
+
+# by torstein.k.johansen at gmail.com
+
+if [ $# -ne 2 ]; then
+  echo "Usage: $(basename $0) <dir> <class>"
+  exit 1
+fi
+
+find $1 -name "*.jar" | while read f; do
+  if [ -x /usr/bin/unzip ]; then
+    result=$(unzip -t "$f" | grep "$2")
+  elif [ -x /usr/bin/jar ]; then
+    result=$(jar tf "$f" | grep "$2")
+  fi
+
+  if [ $(echo "$result" | wc -c) -gt 2 ]; then
+    echo "$f contains the following matches:"
+    for el in "$result"; do
+      echo '  *' $(echo $el | sed 's/.*:\(.*\) OK/\1/')
+    done
+  fi
+done
