@@ -10,7 +10,7 @@ fi
 
 find $1 -name "*.jar" | while read f; do
   if [ -x /usr/bin/unzip ]; then
-    result=$(unzip -t "$f" | grep "$2")
+    result=$(unzip -t "$f" | grep "$2" | grep '^[ ]*testing')
   elif [ -x /usr/bin/jar ]; then
     result=$(jar tf "$f" | grep "$2")
   fi
