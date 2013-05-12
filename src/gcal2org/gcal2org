@@ -33,9 +33,9 @@ google \
   IFS='~' read title when where <<< "${f}"
   IFS=' ' read from_date from_time dash to_date to_time <<< "$when"
   if [[ "${from_time}" != "00:00" ]]; then
-    echo '** TODO' ${from_time}-${to_time} ${title}
+    echo '**' ${from_time}-${to_time} ${title}
   else
-    echo '** TODO' ${title}
+    echo '**' ${title}
   fi
   echo '   SCHEDULED: <'${from_date}'>'
   echo ''
