@@ -21,6 +21,9 @@ function create_target_dir() {
 
 function fix_title() {
   title=$(sed -n 's/^#+TITLE: \(.*\)/\1/p' $1)
+  if [ -z "$title" ]; then
+    title=$(sed -n 's/^#+title: \(.*\)/\1/p' $1)
+  fi
   run sed -i "s~<title>\(.*\)</title>~<title>${title}</title>~" $output_file
 }
 
