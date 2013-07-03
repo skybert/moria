@@ -35,6 +35,10 @@ s~^\*\*\* \(.*\)~<h4>\1</h4>~
   }
 }
 
+# quotes
+s~^#+begin_quote~<blockquote>~
+s~^#+end_quote~</blockquote>~
+
 # monotype
 s~=\(.*\)=~<code>\1</code>~
 
