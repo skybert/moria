@@ -20,11 +20,11 @@ function run() {
 }
 
 function print() {
-  echo "$@"
+  echo "[$(basename $0)]" "$@"
 }
 
 function print_and_log() {
-  echo "$@"
+  print "$@"
   if [[ -n "$log_file" || -w $(dirname $log_file) ]]; then
     echo "$@" >> $log_file
   fi
