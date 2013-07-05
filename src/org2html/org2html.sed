@@ -43,8 +43,11 @@ s~^#+end_quote~</blockquote>~
 s~=\(.*\)=~<code>\1</code>~
 
 # lists
-/^-/,/^-/ {
-  s/^-/<li>/
+/^- /,/^- / {
+  s/^- /<li>/
+}
+
+/^<li>/ {
   a </li>
 }
 
