@@ -29,7 +29,7 @@ function fix_title() {
 
 function get_file_name() {
   echo "$title" | tr '[A-Z]' '[a-z]' | \
-    sed 's/[,!?_ ]/-/g'
+    sed "s/[',!?_ ]/-/g"
 }
 
 function convert_org_to_html() {
