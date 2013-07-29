@@ -1,0 +1,120 @@
+#! /usr/bin/env bash
+
+## Command which creates an Atom feed given a list of files, which
+## are the sources of your website articles.
+
+## Variables used in the command. These can all be overridden on the
+## command line by the user.
+dir=~/tmp
+file_type=org
+site_base_uri=http://skybert.net
+author_name="Torstein Krause Johansen"
+author_email="torstein.k.johansen@gmail.com"
+
+## Every atom entry must have a unique ID.
+##
+## $1 :: the file
+function get_article_id() {
+  local content="$1 $(cat $1)"
+  local article_id=$(echo "${content}" | md5sum | cut -d' ' -f1)
+  echo $article_id
+}
+
+function get_article_title() {
+  grep -i ^'#+title:' $1 | \
+    cut -d':' -f2- | \
+    sed 's/^[ ]*//'
+}
+
+function get_article_summary() {
+  sed -n -f $(dirname $0)/get-article-summary.sed $1
+}
+
+# returns a full ISO8601 formatted date including timezone
+# of when the article was last changed.
+function get_article_last_changed() {
+  local file_last_changed=$(stat -c %Y $file)
+  get_iso_8601_from_timestamp ${file_last_changed}
+}
+
+function get_iso_8601_from_timestamp() {
+  date --date @${1} +%Y-%m-%dT%H:%M:%S%:::z
+}
+
+function get_article_link() {
+  local article_title_uri_fragment=$(
+    grep -i ^#+title: $1 | cut -d':' -f2 | \
+    sed 's/^[ ]*//' | \
+    tr '[A-Z]' '[a-z]' | \
+    sed "s/[ ,/;'!@]/-/g"
+  )
+  local dir_uri_fragment=$(
+    dirname $1 | \
+    sed -e "s#${dir}#${site_base_uri}#" \
+  )
+  echo ${dir_uri_fragment}/${article_title_uri_fragment}
+}
+
+## $1 :: the file of the article
+function create_atom_entry() {
+  local file=$1
+  if [ ! -r $file ]; then
+    return
+  fi
+ 
+  local article_id=$(get_article_id $file)
+  local article_title=$(get_article_title $file)
+  local article_summary=$(get_article_summary $file)
+  local article_last_changed=$(get_article_last_changed $file)
+  cat <<EOF
+<entry>
+<!--
+file: $file
+-->
+<id>$article_id</id>
+<link rel="alternate" type="text/html" href="$(get_article_link $file)"/>
+<title>$article_title</title>
+<updated>$article_last_changed</updated>
+<summary>${article_summary}</summary>
+</entry>
+EOF
+}
+
+feed_title="My feed"
+
+## $@ :: list of files
+function create_atom_feed() {
+  cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title>${feed_title}</title>
+<updated>$(get_iso_8601_from_timestamp $(date +%s))</updated>
+<contributor>
+  <name>${author_name}</name>
+  <email>${author_email}</email>
+</contributor>
+EOF
+
+  for el in $@; do
+    create_atom_entry $el
+  done
+  cat <<EOF
+</feed>
+EOF
+}
+
+function read_user_input() {
+  echo reading user input > /dev/null
+}
+
+function get_list_of_articles() {
+  local list=$(
+    find $dir -name "*.${file_type}" -type f
+  )
+  echo $list
+}
+
+read_user_input
+list=$(get_list_of_articles)
+create_atom_feed $list
+
