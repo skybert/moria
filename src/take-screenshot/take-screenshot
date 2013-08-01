@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+active_window_id=$(
+  xprop -root | \
+    grep "_NET_ACTIVE_WINDOW(WINDOW)" | \
+    cut -d'#' -f2
+)
+
+fn=/tmp/$(date +%F_%H%M%S_%N).png
+import -frame \
+  -window $active_window_id \
+  ${fn}
+
+echo "Created screenshot of active window in" ${fn}
+
