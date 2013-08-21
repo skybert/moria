@@ -55,3 +55,6 @@ function exit_on_error() {
   fi
 }
 
+function get_id() {
+  echo "[$(basename $0)]"
+}
