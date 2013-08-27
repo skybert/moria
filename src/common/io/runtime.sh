@@ -29,6 +29,12 @@ function exit_on_error() {
   fi
 }
 
+function remove_file_if_exists() {
+  if [ -w "$1" ]; then
+    run "$1"
+  fi
+}
+
 function remove_pid_and_exit_in_error() {
   if [[ -z $pid_file && -e $pid_file ]]; then
     rm $pid_file
