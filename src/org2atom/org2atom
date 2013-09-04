@@ -112,6 +112,7 @@ function read_user_input() {
   dir=$1
   if [ ! -d $dir ]; then
     echo "dir=$dir must be a directory"
+    exit 1
   fi
 }
 
