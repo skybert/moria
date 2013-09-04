@@ -18,7 +18,7 @@ feed_title="Latest articles from $(basename $site_base_uri)"
 function get_article_id() {
   local content="$1 $(cat $1)"
   local article_id=$(echo "${content}" | md5sum | cut -d' ' -f1)
-  echo $article_id
+  echo "urn:"$(basename $site_base_uri | sed 's/[.]/-/g'):${article_id}
 }
 
 function get_article_title() {
