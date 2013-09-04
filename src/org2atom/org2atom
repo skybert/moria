@@ -10,6 +10,7 @@ file_type=org
 site_base_uri=http://skybert.net
 author_name="Torstein Krause Johansen"
 author_email="torstein.k.johansen@gmail.com"
+feed_title="Latest articles from $(basename $site_base_uri)"
 
 ## Every atom entry must have a unique ID.
 ##
@@ -82,8 +83,6 @@ file: $file
 </entry>
 EOF
 }
-
-feed_title="My feed"
 
 ## $@ :: list of files
 function create_atom_feed() {
