@@ -37,11 +37,11 @@ function get_article_summary() {
 # of when the article was last changed.
 function get_article_last_changed() {
   local file_last_changed=$(stat -c %Y $file)
-  get_iso_8601_from_timestamp ${file_last_changed}
+  get_iso_3339_from_timestamp ${file_last_changed}
 }
 
-function get_iso_8601_from_timestamp() {
-  date --date @${1} +%Y-%m-%dT%H:%M:%S%:::z
+function get_iso_3339_from_timestamp() {
+  date --date @${1} +%Y-%m-%dT%H:%M:%S%:::z:00
 }
 
 function get_article_link() {
@@ -90,11 +90,14 @@ function create_atom_feed() {
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>${feed_title}</title>
-<updated>$(get_iso_8601_from_timestamp $(date +%s))</updated>
-<contributor>
+<id>$(get_article_id $HOME/.emacs)</id>
+<updated>$(get_iso_3339_from_timestamp $(date +%s))</updated>
+<link rel="self"
+      href="${site_base_uri}/$(basename $site_base_uri | sed 's/[.]/-/g')-feed.xml"/>
+<author>
   <name>${author_name}</name>
   <email>${author_email}</email>
-</contributor>
+</author>
 EOF
 
   for el in $@; do
