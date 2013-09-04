@@ -23,11 +23,13 @@ function get_article_id() {
 function get_article_title() {
   grep -i ^'#+title:' $1 | \
     cut -d':' -f2- | \
-    sed 's/^[ ]*//'
+    sed 's/^[ ]*//' | \
+    sed -f ../common-lib/text/characters-to-entities.sed
 }
 
 function get_article_summary() {
-  sed -n -f $(dirname $0)/get-article-summary.sed $1
+  sed -n -f $(dirname $0)/get-article-summary.sed $1 | \
+    sed -f ../common-lib/text/characters-to-entities.sed    
 }
 
 # returns a full ISO8601 formatted date including timezone
@@ -44,9 +46,10 @@ function get_iso_8601_from_timestamp() {
 function get_article_link() {
   local article_title_uri_fragment=$(
     grep -i ^#+title: $1 | cut -d':' -f2 | \
-    sed 's/^[ ]*//' | \
-    tr '[A-Z]' '[a-z]' | \
-    sed "s/[ ,/;'!@]/-/g"
+      sed 's/^[ ]*//' | \
+      tr '[A-Z]' '[a-z]' | \
+      sed "s/[ ,/;'!@]/-/g" | \
+      sed -f ../common-lib/text/characters-to-entities.sed
   )
   local dir_uri_fragment=$(
     dirname $1 | \
@@ -104,7 +107,10 @@ EOF
 }
 
 function read_user_input() {
-  echo reading user input > /dev/null
+  dir=$1
+  if [ ! -d $dir ]; then
+    echo "dir=$dir must be a directory"
+  fi
 }
 
 function get_list_of_articles() {
@@ -114,7 +120,7 @@ function get_list_of_articles() {
   echo $list
 }
 
-read_user_input
+read_user_input $@
 list=$(get_list_of_articles)
 create_atom_feed $list
 
