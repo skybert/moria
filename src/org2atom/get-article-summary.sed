@@ -1,19 +1,11 @@
 # include everything from the title to the first sub heading.
-/^#+title:/,/\*/ {
-  /^[A-Z]/ {
+/^#+title:/I,/\*/ {
+  /^[A-Z]/I {
     p
   } 
-  /^[a-z]/ {
+  /^$/ {
     p
-  } 
+  }
 }
 
-/^#+TITLE:/,/\*/ {
-  /^[A-Z]/ {
-    p
-  } 
-  /^[a-z]/ {
-    p
-  } 
-}
 
