@@ -3,6 +3,7 @@
 # fix entities
 s~<~\&lt;~g
 s~>~\&gt;~g
+s~&~\&gt;~g
 
 # bold & italics
 s~\*\(.*\)\*~<strong>\1</strong>~g

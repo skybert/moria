@@ -1,0 +1,53 @@
+#! /usr/bin/env bash
+
+source /usr/share/common-bashing/text/color.sh
+
+## $1 :: start
+## $@ :: end
+function get_load_time() {
+  local time=$(( end - start ))
+
+  if [ $time -gt 5 ]; then
+    echo $(red ${time}"s")
+  else
+    echo $(green ${time}"s")
+  fi
+}
+
+function check_site() {
+  local start=$(date +%s)
+  local full="$(
+    wget -S -O - --quiet http://$1 2>&1
+  )"
+  local end=$(date +%s)
+
+  be=$(
+    echo "$full" | \
+      grep X-Cache-Host | \
+      cut -d':' -f2
+  )
+  if [ -z "$be" ]; then
+    be="n/a"
+  fi
+  
+  title=$(
+    echo "$full" | \
+      grep -A 1 '<title>' | \
+      grep -v '<title>'
+  )
+  echo $(date +%H:%M:%S) $1 $(get_load_time $start $end) \
+    $(echo "$full" | wc -c) \
+    $be \
+    $(echo $title | sed 's/ /-/g')
+  
+}
+
+function check_all_sites() {
+  for el in $@; do
+    check_site $el
+  done
+}
+
+while true; do
+  check_all_sites $@ | column -t
+done
