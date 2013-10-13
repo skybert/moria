@@ -23,8 +23,9 @@ for el in $src_dir $target_dir; do
   fi
 done
 
-error_dir=/usr/local/src/picture-import/error
-log_file=/usr/local/src/picture-import/log/$(basename $0 .sh).log
+error_dir=$HOME/.$(basename $0)/errors
+log_file=$HOME/.$(basename $0)/log
+mkdir -p ${error_dir}
 
 if [ $(which identify 2>/dev/null | wc -l) -eq 0 ]; then
   echo "You need imagemagick installed to use $(basename $0) :-("
