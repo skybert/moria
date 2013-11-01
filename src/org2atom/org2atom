@@ -26,12 +26,10 @@ function get_article_title() {
     cut -d':' -f2- | \
     sed 's/^[ ]*//' | \
     sed -f ../common/text/characters-to-entities.sed
-    sed -f ../common/text/characters-to-entities.sed
 }
 
 function get_article_summary() {
   sed -n -f $(dirname $0)/get-article-summary.sed $1 | \
-    sed -f ../common/text/characters-to-entities.sed    
     sed -f ../common/text/characters-to-entities.sed    
 }
 
@@ -52,7 +50,6 @@ function get_article_link() {
       sed 's/^[ ]*//' | \
       tr '[A-Z]' '[a-z]' | \
       sed "s/[ ,/;'!@]/-/g" | \
-      sed -f ../common/text/characters-to-entities.sed
       sed -f ../common/text/characters-to-entities.sed
   )
   local dir_uri_fragment=$(

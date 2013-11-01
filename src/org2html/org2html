@@ -9,7 +9,6 @@ src_dir=$HOME/src/skybert-net
 org_src_dir=${src_dir}/src
 
 source ../common/indispensable.sh || {
-source ../common/indispensable.sh || {
   echo "indispensible.sh is indispensible for $(basename $0)"
   exit 1
 }
