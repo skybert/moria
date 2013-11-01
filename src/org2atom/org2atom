@@ -25,12 +25,14 @@ function get_article_title() {
   grep -i ^'#+title:' $1 | \
     cut -d':' -f2- | \
     sed 's/^[ ]*//' | \
-    sed -f ../common-lib/text/characters-to-entities.sed
+    sed -f ../common/text/characters-to-entities.sed
+    sed -f ../common/text/characters-to-entities.sed
 }
 
 function get_article_summary() {
   sed -n -f $(dirname $0)/get-article-summary.sed $1 | \
-    sed -f ../common-lib/text/characters-to-entities.sed    
+    sed -f ../common/text/characters-to-entities.sed    
+    sed -f ../common/text/characters-to-entities.sed    
 }
 
 # returns a full ISO8601 formatted date including timezone
@@ -50,7 +52,8 @@ function get_article_link() {
       sed 's/^[ ]*//' | \
       tr '[A-Z]' '[a-z]' | \
       sed "s/[ ,/;'!@]/-/g" | \
-      sed -f ../common-lib/text/characters-to-entities.sed
+      sed -f ../common/text/characters-to-entities.sed
+      sed -f ../common/text/characters-to-entities.sed
   )
   local dir_uri_fragment=$(
     dirname $1 | \
