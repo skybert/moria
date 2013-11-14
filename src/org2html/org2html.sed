@@ -40,8 +40,8 @@ s~^\*\*\* \(.*\)~<h4>\1</h4>~
 s~^#+begin_quote~<blockquote>~
 s~^#+end_quote~</blockquote>~
 
-# monotype
-s~=\(.*\)=~<code>\1</code>~
+# monotype, non greedy matching
+s~=\([^=]*\)=~<code>\1</code>~g
 
 # lists
 /^- /,/^- / {
