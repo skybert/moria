@@ -30,7 +30,9 @@ function get_article_title() {
 
 function get_article_summary() {
   sed -n -f $(dirname $0)/get-article-summary.sed $1 | \
-    sed -f ../common/text/characters-to-entities.sed    
+    sed -f ../common/text/characters-to-entities.sed | \
+    sed -f ../common/text/org-to-plain-text.sed
+
 }
 
 # returns a full ISO8601 formatted date including timezone
@@ -65,7 +67,7 @@ function create_atom_entry() {
   if [ ! -r $file ]; then
     return
   fi
- 
+
   local article_id=$(get_article_id $file)
   local article_title=$(get_article_title $file)
   local article_summary=$(get_article_summary $file)
