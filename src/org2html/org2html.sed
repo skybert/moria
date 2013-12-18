@@ -40,7 +40,7 @@ s~=\([^=]*\)=~<code>\1</code>~g
 
 # bold & italics
 s~\*\([^\*]*\)\*~<strong>\1</strong>~g
-s~_\([^_]*\)_~<em>\1</em>~g
+s~ _\([^_]*\)_~ <em>\1</em>~g
 
 # lists
 /^- /,/^- / {
