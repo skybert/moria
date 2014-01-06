@@ -1,0 +1,105 @@
+#! /usr/bin/env bash
+
+# Command which search through all dependency managed dependencies in
+# a POM and finds the ones that are available in a given Maven
+# repository.
+#
+# by torstein
+#
+# Example usage:
+#
+# $ find-dependencies-in-repo --help --pom ~/src/foo/pom.xml
+# POM checked: /home/torstein/src/foo/pom.xml
+# Maven repo : /opt/redhat/jboss-eap-6.2.0.GA-maven-repository
+#
+# activation exists in repository with version: 1.1.1-redhat-2
+# antlr exists in repository with version: 2.7.7.redhat-4
+# commons-beanutils exists in repository with version: 1.8.3.redhat-6
+# commons-codec exists in repository with version: 1.4-redhat-2
+# commons-collections exists in repository with version: 3.2.1-redhat-2
+# commons-io exists in repository with version: 2.1-redhat-2
+# commons-lang exists in repository with version: 2.6-redhat-2
+# dom4j exists in repository with version: 1.6.1.redhat-6
+# guava exists in repository with version: 13.0.1-redhat-1
+# httpclient exists in repository with version: 4.2.1-redhat-1
+# jaxb-xjc exists in repository with version: 2.2.5.redhat-7
+# jaxen exists in repository with version: 1.1.3.redhat-3
+# jbossweb exists in repository with version: 7.2.2.Final-redhat-1
+# jdom exists in repository with version: 1.1.2.redhat-3
+# jsf-api exists in repository with version: 1.2_15-b01-redhat-8
+# jsf-impl exists in repository with version: 2.1.19-redhat-2
+# mail exists in repository with version: 1.4.5-redhat-1
+# opensaml exists in repository with version: 2.5.3.redhat-2
+# slf4j-api exists in repository with version: 1.7.2.redhat-2
+# slf4j-jdk14 exists in repository with version: 1.7.2.redhat-2
+# xercesImpl exists in repository with version: 2.9.1.redhat-5
+# xom exists in repository with version: 1.2.7.redhat-4
+
+
+pom=""
+repo_dir=/opt/redhat/jboss-eap-6.2.0.GA-maven-repository
+
+function read_user_input() {
+  for el in "$@"; do
+    if [[ $el == "--pom" ]]; then
+      next_is_pom=1
+    elif [ ${next_is_pom-0} -eq 1 ]; then
+      pom=$el
+    fi
+  done
+}
+
+function find_dependencies_in_repo() {
+  echo "$@" | \
+    sed -e "s#[.]#/#g" \
+    -e "s#<groupId>\([^<]*\)</groupId>#${repo_dir}/\1/#g" \
+    -e "s#<artifactId>\([^<]*\)</artifactId>#\1/\n#g" | while read path; do
+    if [ -z ${path} ]; then
+      continue
+    fi
+    if [ -d $path ]; then
+      echo -n $(basename $path) "exists in repository with version: "
+      basename $(find ${path} -type d -maxdepth 1 | tail -1)
+    fi
+  done
+}
+
+function list_dependencies_available_in_repo() {
+  find_dependencies_in_repo $(
+    xml_grep \
+      --nowrap \
+      --cond /project/dependencies/dependency/artifactId \
+      --cond /project/dependencies/dependency/groupId \
+      ${pom} \
+      2>/dev/null
+  )
+}
+
+function list_managed_dependencies_available_in_repo() {
+  find_dependencies_in_repo $(
+    xml_grep \
+      --nowrap \
+      --cond /project/dependencyManagement/dependencies/dependency/artifactId \
+      --cond /project/dependencyManagement/dependencies/dependency/groupId \
+      ${pom} \
+      2>/dev/null
+  )
+}
+
+function list_all() {
+  list_dependencies_available_in_repo
+  list_managed_dependencies_available_in_repo
+}
+
+function main() {
+  cat <<EOF
+POM checked: ${pom}
+Maven repo : ${repo_dir}
+
+EOF
+  list_all | sort | uniq
+
+}
+
+read_user_input "$@"
+main
