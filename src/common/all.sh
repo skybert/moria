@@ -1,4 +1,4 @@
-dir=/usr/share/common-bashing
+dir=/usr/share/moria
 if [ ! -d $dir ]; then
   exit 1
 fi
