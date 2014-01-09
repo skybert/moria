@@ -26,8 +26,22 @@ function read_user_input() {
       next_is_pom=1
     elif [ ${next_is_pom-0} -eq 1 ]; then
       pom=$el
+    elif [[ $el == "--help" ]]; then
+      print_usage
+      exit 0
     fi
   done
+
+  if [ -z "${pom}" ]; then
+    print_usage
+    exit 1
+  fi
+}
+
+function print_usage() {
+  cat <<EOF
+Usage: $(basename $0) --pom <file>
+EOF
 }
 
 function find_dependencies_in_repo() {
@@ -39,8 +53,10 @@ function find_dependencies_in_repo() {
       continue
     fi
     if [ -d $path ]; then
-      echo -n $(basename $path) "exists in repository with version: "
-      basename $(find ${path} -type d -maxdepth 1 | tail -1)
+      local version=$(basename $(find ${path} -type d -maxdepth 1 | tail -1))
+      local artifact_id=$(basename $path)
+      local group_id=$(basename $(dirname $path))
+      echo ${group_id}:${artifact_id}:${version} "exists in repo"
     fi
   done
 }
@@ -67,9 +83,22 @@ function list_managed_dependencies_available_in_repo() {
   )
 }
 
+
+function list_plugin_dependencies_available_in_repo() {
+  find_dependencies_in_repo $(
+    xml_grep \
+      --nowrap \
+      --cond /project/build/plugins/plugin/dependencies/dependency/artifactId \
+      --cond /project/build/plugins/plugin/dependencies/dependency/groupId \
+      ${pom} \
+      2>/dev/null
+  )
+}
+
 function list_all() {
   list_dependencies_available_in_repo
   list_managed_dependencies_available_in_repo
+  list_plugin_dependencies_available_in_repo
 }
 
 function main() {
@@ -82,5 +111,13 @@ EOF
 
 }
 
+function bootstrap_thyself() {
+  which xml_grep &>/dev/null || {
+    echo "You must have xml_grep installed"
+    exit 1
+  }
+}
+
+bootstrap_thyself
 read_user_input "$@"
 main
