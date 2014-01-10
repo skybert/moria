@@ -1,0 +1,48 @@
+#! /usr/bin/env bash
+
+# Comand which does sensible diffing of two JAR files.
+
+# by torstein
+function bootstrap_thyself() {
+  which xml_grep &>/dev/null || {
+    echo "You must have xml_grep installed"
+    exit 1
+  }
+}
+
+function main() {
+  diff -w \
+    <(cd $(dirname ${from_jar}) && unzip -t $(basename ${from_jar})) \
+    <(cd $(dirname ${to_jar}) && unzip -t $(basename ${to_jar}))
+}
+
+function print_usage() {
+  cat <<EOF
+Usage: $(basename $0) OPTIONS <one-jar> <another-jar>
+
+OPTOINS
+--help     Prints this help screen.
+EOF
+}
+
+function read_user_input() {
+  for el in "$@"; do
+    if [[ $el == "--help" ]]; then
+      print_usage
+      exit 0
+    fi
+  done
+
+  if [ $# -ne 2 ]; then
+    print_usage
+    exit 1
+  fi
+
+  # TODO proper
+  from_jar=$1
+  to_jar=$2
+}
+
+bootstrap_thyself
+read_user_input
+main
