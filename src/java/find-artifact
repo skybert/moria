@@ -1,0 +1,45 @@
+#! /usr/bin/env bash
+
+# Command which searches a given Maven repository for an artifact. The
+# command will only return 0 if both the POM and JAR files are present
+# in the repository. This will help you find corrupt artifacts in the
+# repository.
+
+# by torstein.k.johansen at gmail dot com
+
+repo_dir=$1
+artifact=$2
+
+function find_artifact_in_local_repo() {
+  local artifact=$(echo $1 | sed 's/[:]jar//')
+  IFS=: read group_id artifact_id version <<< "$artifact"
+  local group_dir=$(echo $group_id | sed 's#[.]#/#g')
+
+  if [[ -e $repo_dir/$group_dir/$artifact_id/$version/${artifact_id}-${version}.pom && \
+    -e $repo_dir/$group_dir/$artifact_id/$version/${artifact_id}-${version}.jar ]]; then
+    echo "Artifact" $1 "exists in repo:" $repo_dir | fmt
+    exit 0
+  else
+    exit 1
+  fi
+}
+
+function read_user_input() {
+  if [ $# -ne 2 ]; then
+    print_usage
+    exit 1
+  fi
+}
+
+function print_usage() {
+  cat <<EOF
+Usage: $(basename $0) <repo dir> <artifact>
+
+Example:
+$(basename $0) ~/.m2/repository org.slf4j:slf4j-api:1.7.2.redhat-2
+EOF
+}
+
+read_user_input $@
+find_artifact_in_local_repo $artifact
+
