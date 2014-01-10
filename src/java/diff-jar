@@ -3,6 +3,7 @@
 # Command which does sensible diffing of two JAR files.
 
 # by torstein
+
 function bootstrap_thyself() {
   local required_command_list="unzip"
   for el in $required_command_list; do
