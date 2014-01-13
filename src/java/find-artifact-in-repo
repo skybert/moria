@@ -7,25 +7,34 @@
 
 # by torstein.k.johansen at gmail dot com
 
-repo_dir=$1
-artifact=$2
+repo_dir=$HOME/.m2/repository
+artifact=""
 
 function find_artifact_in_local_repo() {
   local artifact=$(echo $1 | sed 's/[:]jar//')
   IFS=: read group_id artifact_id version <<< "$artifact"
   local group_dir=$(echo $group_id | sed 's#[.]#/#g')
 
+  local jar=$repo_dir/$group_dir/$artifact_id/$version/${artifact_id}-${version}.jar
   if [[ -e $repo_dir/$group_dir/$artifact_id/$version/${artifact_id}-${version}.pom && \
-    -e $repo_dir/$group_dir/$artifact_id/$version/${artifact_id}-${version}.jar ]]; then
-    echo "Artifact" $1 "exists in repo:" $repo_dir | fmt
+    -e $jar ]]; then
+    echo "Artifact" $1 "exists in repo:" $jar | fmt
     exit 0
+  elif [ -d $repo_dir/$group_dir/$artifact_id ]; then
+    echo "Artifacts matching" ${group_id}:${artifact_id}:
+    find $repo_dir/$group_dir/$artifact_id -name "*.jar"
   else
     exit 1
   fi
 }
 
 function read_user_input() {
-  if [ $# -ne 2 ]; then
+  if [ $# -eq 2 ]; then
+    repo_dir=$1
+    artifact=$2
+  elif [ $# -eq 1 ]; then
+    artifact=$1
+  else
     print_usage
     exit 1
   fi
