@@ -3,22 +3,43 @@
 ## Command which searches all JAR files for a given class.
 ## by torstein.k.johansen at gmail.com
 
-if [ $# -ne 2 ]; then
+if [ $# -lt 1 ]; then
   echo "Usage: $(basename $0) <dir> <class>"
   exit 1
+elif [ $# -eq 2 ]; then
+  repo_dir=$1
+  query=$2
+elif [ $# -eq 1 ]; then
+  conf_file=$HOME/.$(basename $0).conf
+  if [ -r $conf_file ]; then
+    source $conf_file
+  fi
+  query=$1
 fi
 
-find $1 -name "*.jar" | while read f; do
+if [ -z ${repo_dir} ]; then
+  echo "Note: you didn't specify a repo directory, searchin in" \
+    $(pwd) "instead." | fmt
+  repo_dir=$(pwd)
+fi
+
+find $repo_dir -name "*.jar" | \
+  grep -v "\-sources.jar" | while read f; do
+
   if [ -x /usr/bin/unzip ]; then
-    result=$(unzip -t "$f" | grep "$2" | grep '^[ ]*testing')
+    result=$(unzip -t "$f" | grep "$query")
   elif [ -x /usr/bin/jar ]; then
-    result=$(jar tf "$f" | grep "$2")
+    result=$(jar tf "$f" | grep "$query")
   fi
 
   if [ $(echo "$result" | wc -c) -gt 2 ]; then
     echo "$f contains the following matches:"
-    for el in "$result"; do
-      echo '  *' $(echo $el | sed 's/.*:\(.*\) OK/\1/')
+    echo "$result" | while read el; do
+      echo '  *' $(echo $el | \
+        sed -e 's/.*:\(.*\) OK/\1/' \
+        -e 's/[/]/./g' \
+        -e 's/.class$//'
+      )
     done
   fi
 done
