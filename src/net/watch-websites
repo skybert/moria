@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-source /usr/share/common-bashing/text/color.sh
+source /usr/share/moria/text/color.sh
 
 ## $1 :: start
 ## $@ :: end

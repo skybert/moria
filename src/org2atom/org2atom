@@ -51,7 +51,7 @@ function get_article_link() {
     grep -i ^#+title: $1 | cut -d':' -f2 | \
       sed 's/^[ ]*//' | \
       tr '[A-Z]' '[a-z]' | \
-      sed "s/[ ,/;'!@]/-/g" | \
+      sed "s/[ ,/;'!@?]/-/g" | \
       sed -f ../common/text/characters-to-entities.sed
   )
   local dir_uri_fragment=$(
