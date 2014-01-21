@@ -21,7 +21,7 @@ function find_artifact_in_local_repo() {
     echo "Artifact" $1 "exists in repo:" $jar | fmt
     exit 0
   elif [ -d $repo_dir/$group_dir/$artifact_id ]; then
-    echo "Artifacts matching" ${group_id}:${artifact_id}:
+    # echo "Artifacts matching" ${group_id}:${artifact_id}:
     find $repo_dir/$group_dir/$artifact_id -name "*.jar"
   else
     exit 1
@@ -42,10 +42,11 @@ function read_user_input() {
 
 function print_usage() {
   cat <<EOF
-Usage: $(basename $0) <repo dir> <artifact>
+Usage: $(basename $0) [<repo dir>] <artifact>
 
 Example:
-$(basename $0) ~/.m2/repository org.slf4j:slf4j-api:1.7.2.redhat-2
+$(basename $0) /op/redhat/jboss-eap-6.2 org.slf4j:slf4j-api:1.7.2.redhat-2
+$(basename $0) org.hibernate
 EOF
 }
 
