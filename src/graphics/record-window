@@ -1,0 +1,37 @@
+#! /usr/bin/env bash
+
+# based on this gist: https://gist.github.com/neeee/3042755
+
+function set_title_bar_pixels() {
+  # TODO read from the current theme
+  title_bar_pixels=19
+}
+
+function set_border_pixels() {
+  # TODO read from the current theme
+  border_pixels=1
+}
+
+function bootstrap_thyself() {
+  set_title_bar_pixels
+  set_border_pixels
+}
+
+bootstrap_thyself
+
+xwininfo=$(xwininfo -shape)
+
+function get_only_the_number() {
+  echo "$xwininfo" | grep "$1" | tr -cd [:digit:]
+}
+
+x=$(get_only_the_number "Absolute upper-left X:")
+y=$(get_only_the_number "Absolute upper-left Y:")
+w=$(get_only_the_number "Width:")
+h=$(get_only_the_number "Height:")
+
+byzanz-record $@ \
+  -x $(( x - border_pixels  )) \
+  -y $(( y - title_bar_pixels - border_pixels )) \
+  -w $(( w + border_pixels * 2 )) \
+  -h $(( h + title_bar_pixels + border_pixels * 2 ))
