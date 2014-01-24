@@ -2,27 +2,26 @@
 
 # based on this gist: https://gist.github.com/neeee/3042755
 
-function set_title_bar_pixels() {
-  # TODO read from the current theme
-  title_bar_pixels=19
-}
-
-function set_border_pixels() {
-  # TODO read from the current theme
-  border_pixels=1
+function print_usage() {
+    cat <<EOF
+Usage: $(basename $0) <video.gif>
+EOF
 }
 
 function bootstrap_thyself() {
-  set_title_bar_pixels
-  set_border_pixels
+    if [ $# -lt 1 ]; then
+        print_usage
+        exit 1
+    fi
 }
 
-bootstrap_thyself
+bootstrap_thyself $@
 
-xwininfo=$(xwininfo -shape)
+# The -frame option gives us the window decorations too
+xwininfo=$(xwininfo -frame)
 
 function get_only_the_number() {
-  echo "$xwininfo" | grep "$1" | tr -cd [:digit:]
+    echo "$xwininfo" | grep "$1" | tr -cd [:digit:]
 }
 
 x=$(get_only_the_number "Absolute upper-left X:")
@@ -31,7 +30,8 @@ w=$(get_only_the_number "Width:")
 h=$(get_only_the_number "Height:")
 
 byzanz-record $@ \
-  -x $(( x - border_pixels  )) \
-  -y $(( y - title_bar_pixels - border_pixels )) \
-  -w $(( w + border_pixels * 2 )) \
-  -h $(( h + title_bar_pixels + border_pixels * 2 ))
+    -x $x \
+    -y $y \
+    -w $w \
+    -h $h
+
