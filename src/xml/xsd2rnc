@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+rngconv_home=/opt/rngconv
+
+xsd_file=$1
+base_filename=$(basename ${xsd_file} .xsd)
+rnc_file=${base_filename}.rnc
+dir=$(dirname $xsd_file)
+
+java -jar $rngconv_home/rngconv.jar \
+  $xsd_file \
+  > ${dir}/${base_filename}.rng
+trang \
+  -I rng \
+  -O rnc \
+  ${dir}/${base_filename}.rng \
+  ${dir}/${base_filename}.rnc
