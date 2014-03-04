@@ -23,7 +23,7 @@ if [ -z ${repo_dir} ]; then
   repo_dir=$(pwd)
 fi
 
-find -L $repo_dir -name "*.jar" | \
+find -L $repo_dir -name "*.jar" -type f | \
   grep -v "\-sources.jar" | while read f; do
 
   if [ -x /usr/bin/unzip ]; then
