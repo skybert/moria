@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+
+dtd_file=$1
+rnc_file=$(basename ${dtd_file} .dtd).rnc
+
+trang -I dtd -O rnc ${dtd_file} ${rnc_file}
