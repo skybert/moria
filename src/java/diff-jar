@@ -15,9 +15,17 @@ function bootstrap_thyself() {
 }
 
 function main() {
-  diff -w \
-    <(cd $(dirname ${from_jar}) && unzip -t $(basename ${from_jar})) \
-    <(cd $(dirname ${to_jar}) && unzip -t $(basename ${to_jar}))
+  if [ ${ignore_order-0} -eq 1 ]; then
+    diff -w \
+      <(cd $(dirname ${from_jar}) && \
+      (unzip -t $(basename ${from_jar}) | sort | uniq)) \
+      <(cd $(dirname ${to_jar}) &&  \
+      (unzip -t $(basename ${to_jar}) | sort | uniq))
+  else
+    diff -w \
+      <(cd $(dirname ${from_jar}) && unzip -t $(basename ${from_jar})) \
+      <(cd $(dirname ${to_jar}) && unzip -t $(basename ${to_jar}))
+  fi
 }
 
 function print_usage() {
@@ -25,7 +33,8 @@ function print_usage() {
 Usage: $(basename $0) OPTIONS <one-jar> <another-jar>
 
 OPTOINS
---help     Prints this help screen.
+--ignore-order Ignore the order of the files in the JAR.
+--help         Prints this help screen.
 EOF
 }
 
@@ -34,17 +43,22 @@ function read_user_input() {
     if [[ $el == "--help" ]]; then
       print_usage
       exit 0
+    elif [[ $el == "--ignore-order" ]]; then
+      ignore_order=1
+      shift
     fi
   done
 
-  if [ $# -ne 2 ]; then
+  if [ $# -lt 2 ]; then
     print_usage
     exit 1
   fi
 
   # TODO proper
+
   from_jar=$1
   to_jar=$2
+
 }
 
 bootstrap_thyself
