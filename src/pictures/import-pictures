@@ -2,19 +2,30 @@
 
 # by torstein.k.johansen@gmail.com
 
-# from/source
-if [ $1 ]; then
-  src_dir=$1
-else
-  src_dir=$HOME/put_the_new_pictures_in_here
-fi
+function read_user_input() {
+  for el in $@; do
+    if [[ "$el" == "--keep-originals" ]]; then
+      keep_originals=1
+      shift
+    fi
+  done
 
-# to/target
-if [ $2 ]; then
-  target_dir=$2
-else
-  target_dir=/var/gallery
-fi
+  # from/source
+  if [ $1 ]; then
+    src_dir=$1
+  else
+    src_dir=$HOME/put_the_new_pictures_in_here
+  fi
+
+  # to/target
+  if [ $2 ]; then
+    target_dir=$2
+  else
+    target_dir=/var/gallery
+  fi
+}
+
+read_user_input $@
 
 for el in $src_dir $target_dir; do
   if [ ! -d $el ]; then
@@ -43,7 +54,7 @@ function sort_and_archive_picture() {
     mv $1 $error_dir
     return 1
   fi
-  
+
   # catering for dates on the forms:
   # * 2007-04-06T21:13:29.07+02:00
   # * 2007:01:01 17:02:03
@@ -67,12 +78,17 @@ function sort_and_archive_picture() {
     mkdir -p $picture_dir
   fi
 
-  print_and_log "Moving $1 -> $picture_dir ..."
-  mv "$1" $picture_dir/
+  if [ ${keep_originals-0} -eq 0 ]; then
+    print_and_log "Moving $1 -> $picture_dir ..."
+    mv "$1" $picture_dir/
+  else
+    print_and_log "Copying $1 -> $picture_dir ..."
+    cp "$1" $picture_dir/
+  fi
 }
 
 function remove_rempty_directories() {
-  find $src_dir -type d | while read f; do    
+  find $src_dir -type d | while read f; do
     rmdir "$f" 2>/dev/null
   done
 }
