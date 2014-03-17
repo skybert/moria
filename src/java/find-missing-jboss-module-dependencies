@@ -8,6 +8,8 @@
 # to put in the dependency list for the JBoss modules you want to set
 # up.
 #
+# by torstein
+#
 # Example output:
 #
 # $ find-missing-jboss-module-dependencies
