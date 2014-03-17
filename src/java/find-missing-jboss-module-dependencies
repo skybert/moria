@@ -18,6 +18,19 @@
 jboss_home=/opt/jboss-eap-6.2
 jboss_log=$jboss_home/standalone/log/server.log
 
+function assert_environment_ok() {
+  which find-jar &>/dev/null || {
+    echo "You need to have find-jar installed."
+    exit 1
+  }
+
+  if [ ! -r $jboss_log ]; then
+    echo "The JBoss log file at" \
+      $jboss_log \
+      "must exist and be readable." | fmt
+    exit 1
+  fi
+}
 
 function find_dependencies() {
   cat $jboss_log  | \
@@ -37,8 +50,10 @@ function find_dependencies() {
       -e 's#[/]#.#g' \
       -e 's#.main.*##' \
       -e "s#system.layers.base.##"
-    echo ""; done
+    echo ""
+  done
 
 }
 
+assert_environment_ok
 find_dependencies
