@@ -1,0 +1,44 @@
+#! /usr/bin/env bash
+
+# Command which finds missing JBoss inter module dependencies by
+# examining the JBoss log and using find-jar to suggest missing module
+# dependencies.
+#
+# Use this command to investigate which other JBoss modules you need
+# to put in the dependency list for the JBoss modules you want to set
+# up.
+#
+# Example output:
+#
+# $ find-missing-jboss-module-dependencies
+# from [Module "qfree.central.systemadmin.ticketing.client
+#   > Missing dependency:  org.quartz.JobExecutionException
+#   > JBoss module containing this dependency: org.quartz
+
+jboss_home=/opt/jboss-eap-6.2
+jboss_log=$jboss_home/standalone/log/server.log
+
+
+function find_dependencies() {
+  cat $jboss_log  | \
+    egrep "^Caused by: java.lang.ClassNotFoundException:.*Module" | \
+    cut -d: -f3 | \
+    sed 's/^[ ]*//' | sort | uniq | while read l ; \
+    do echo "$l" | \
+    cut -d' ' -f2-; \
+
+    local missing_class=$(echo "$l" | cut -d' ' -f1)
+    echo "  > Missing dependency: " $missing_class
+    echo -n "  > JBoss module containing this dependency: "
+
+    find-jar ${jboss_home}/modules/ $missing_class | \
+      grep "contains" | \
+      sed -e "s#${jboss_home}/modules/##" \
+      -e 's#[/]#.#g' \
+      -e 's#.main.*##' \
+      -e "s#system.layers.base.##"
+    echo ""; done
+
+}
+
+find_dependencies
