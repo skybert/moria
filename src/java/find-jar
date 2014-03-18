@@ -18,7 +18,7 @@ elif [ $# -eq 1 ]; then
 fi
 
 if [ -z ${repo_dir} ]; then
-  echo "Note: you didn't specify a repo directory, searchin in" \
+  echo "Note: you didn't specify a repo directory, searching in" \
     $(pwd) "instead." | fmt
   repo_dir=$(pwd)
 fi
@@ -30,6 +30,8 @@ find -L $repo_dir -name "*.jar" -type f | \
     result=$(unzip -t "$f" | grep "$query")
   elif [ -x /usr/bin/jar ]; then
     result=$(jar tf "$f" | grep "$query")
+  elif [ $(grep "$query" "$f" | wc -l) -gt 0 ]; then
+    result="<somthing (install unzip or jar for more details)>"
   fi
 
   if [ $(echo "$result" | wc -c) -gt 2 ]; then
