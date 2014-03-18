@@ -19,6 +19,8 @@
 
 jboss_home=/opt/jboss-eap-6.2
 jboss_log=$jboss_home/standalone/log/server.log
+maven_repo=$HOME/.m2/repository
+#maven_repo=/opt/jboss-eap-6.2.0.GA-maven-repository
 
 function assert_environment_ok() {
   which find-jar &>/dev/null || {
@@ -46,13 +48,38 @@ function find_dependencies() {
     echo "  > Missing dependency: " $missing_class
     echo -n "  > JBoss module containing this dependency: "
 
-    find-jar ${jboss_home}/modules/ $missing_class | \
-      grep "contains" | \
-      sed -e "s#${jboss_home}/modules/##" \
-      -e 's#[/]#.#g' \
-      -e 's#.main.*##' \
-      -e "s#system.layers.base.##"
-    echo ""
+    local jboss_module=$(
+      find-jar ${jboss_home}/modules/ $missing_class | \
+        grep "contains" | \
+        sed -e "s#${jboss_home}/modules/##" \
+        -e 's#[/]#.#g' \
+        -e 's#.main.*##' \
+        -e "s#system.layers.base.##"
+    )
+
+    if [ -z "$jboss_module" ]; then
+      echo "Not found :-("
+      echo -n "  > Maven artifact containing this dependency: "
+      local jar_containing_class_list=$(
+        find-jar ${maven_repo}/ $missing_class | \
+          grep "contains" | \
+          cut -d' ' -f1
+      )
+
+      if [ -z "$jar_containing_class_list" ]; then
+        echo "Not found :-("
+      else
+        echo ""
+        for el in $jar_containing_class_list; do
+          echo "    >>" $(dirname $el | sed "s#${maven_repo}/##")
+        done
+      fi
+
+    else
+      # if it's found as a jboss module
+      echo "$jboss_module"
+    fi
+
   done
 
 }
