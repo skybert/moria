@@ -84,5 +84,22 @@ function find_dependencies() {
 
 }
 
+function see_if_any_files_cannot_be_found() {
+  local lines=$(
+    cat $jboss_log | \
+      egrep ERROR.*ContainerBase.*FileNotFoundException | \
+      sed 's#.*[[]/#/#'
+    )
+
+  echo "$lines" | while read line; do
+    local module=$(echo "$line" | cut -d']' -f1)
+    echo "JBoss module" ${module:1} "fails because:"
+    echo -n "  >"
+    echo $line | sed 's/.*FileNotFoundException://'
+  done
+
+}
+
 assert_environment_ok
 find_dependencies
+see_if_any_files_cannot_be_found
