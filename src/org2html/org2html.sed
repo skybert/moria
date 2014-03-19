@@ -69,6 +69,7 @@ s~^\[\[~\n\[\[~
 /\[\[/,/\]\]/ {
   # with alt
   s~\[\[\(.*.png\)\]\[\(.*\)\]\]~<div><img src="\1" alt="\2"/></div>~gI
+  s~\[\[\(.*.gif\)\]\[\(.*\)\]\]~<div><img src="\1" alt="\2"/></div>~gI
   s~\[\[\(.*.jpg\)\]\[\(.*\)\]\]~<div><img src="\1" alt="\2"/></div>~gI
 
   # without alt
