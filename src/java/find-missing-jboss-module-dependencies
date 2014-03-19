@@ -31,7 +31,7 @@ function assert_environment_ok() {
   if [ ! -r $jboss_log ]; then
     echo "The JBoss log file at" \
       $jboss_log \
-      "must exist and be readable." | fmt
+      "must exist and be readable by user ${USER}." | fmt
     exit 1
   fi
 }
