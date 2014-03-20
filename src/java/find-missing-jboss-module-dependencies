@@ -42,7 +42,9 @@ function find_dependencies() {
     cut -d: -f3 | \
     sed 's/^[ ]*//' | sort | uniq | while read l ; \
     do echo "$l" | \
-    cut -d' ' -f2-; \
+    cut -d' ' -f2- | \
+    cut -d'"' -f2- | \
+    sed 's/deployment./Module /'
 
     local missing_class=$(echo "$l" | cut -d' ' -f1)
     echo "  > Missing dependency: " $missing_class
@@ -91,13 +93,14 @@ function see_if_any_files_cannot_be_found() {
       sed 's#.*[[]/#/#'
     )
 
-  echo "$lines" | while read line; do
-    local module=$(echo "$line" | cut -d']' -f1)
-    echo "JBoss module" ${module:1} "fails because:"
-    echo -n "  >"
-    echo $line | sed 's/.*FileNotFoundException://'
-  done
-
+  if [ -n "$lines" ]; then
+    echo "$lines" | while read line; do
+      local module=$(echo "$line" | cut -d']' -f1)
+      echo "JBoss module" ${module:1} "fails because:"
+      echo -n "  >"
+      echo $line | sed 's/.*FileNotFoundException://'
+    done
+  fi
 }
 
 assert_environment_ok
