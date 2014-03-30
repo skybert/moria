@@ -43,8 +43,12 @@ if [ $(which identify 2>/dev/null | wc -l) -eq 0 ]; then
   exit 1
 fi
 
-function print_and_log() {
+function log() {
   echo "$@" >> $log_file
+}  
+
+function print_and_log() {
+  log $@
   echo $@
 }
 
@@ -76,6 +80,11 @@ function sort_and_archive_picture() {
 
   if [ ! -d $picture_dir ]; then
     mkdir -p $picture_dir
+  fi
+
+  if [ -e "$picture_dir/$(basename $1)" ]; then
+    log "$picture_dir/$(basename $1) already exists, skipping it."
+    return
   fi
 
   if [ ${keep_originals-0} -eq 0 ]; then
