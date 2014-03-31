@@ -15,7 +15,7 @@ function log() {
 function exit_on_error() {
   if [ $? -gt 0 ]; then
     log "The command [ $@ ] failed :-( Exiting."
-    rm lock_file
+    rm $lock_file
     exit 1
   fi
 }
