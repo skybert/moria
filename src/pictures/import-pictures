@@ -4,8 +4,8 @@
 
 function read_user_input() {
   for el in $@; do
-    if [[ "$el" == "--keep-originals" ]]; then
-      keep_originals=1
+    if [[ "$el" == "--move-originals" ]]; then
+      move_originals=1
       shift
     fi
   done
@@ -45,7 +45,7 @@ fi
 
 function log() {
   echo "$@" >> $log_file
-}  
+}
 
 function print_and_log() {
   log $@
@@ -87,12 +87,12 @@ function sort_and_archive_picture() {
     return
   fi
 
-  if [ ${keep_originals-0} -eq 0 ]; then
-    print_and_log "Moving $1 -> $picture_dir ..."
-    mv "$1" $picture_dir/
-  else
+  if [ ${move_originals-0} -eq 0 ]; then
     print_and_log "Copying $1 -> $picture_dir ..."
     cp "$1" $picture_dir/
+  else
+    print_and_log "Moving $1 -> $picture_dir ..."
+    mv "$1" $picture_dir/
   fi
 }
 
