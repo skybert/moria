@@ -3,7 +3,7 @@
 # by torstein
 
 function run() {
-  "${@}" 1>>$log 2>>$log
+  "${@}" 1>>$log_file 2>>$log_file
   exit_on_error $@
 }
 
@@ -23,7 +23,7 @@ function exit_on_error() {
   if [ ${code} -gt 0 ]; then
     print_and_log "The command [${@}] run as user $USER $(red FAILED)" \
       "(the command exited with code ${code}), I'll exit now :-("
-    print "See $log for further details."
+    print "See $log_file for further details."
     remove_file_if_exists $lock_file
     remove_pid_and_exit_in_error
   fi
@@ -43,10 +43,10 @@ function remove_pid_and_exit_in_error() {
   # this method is also used from bootstrapping methods in scripts
   # where the log file may not yet exist, hence, we test for its
   # existence here before logging the call/stack trace.
-  if [ -w $log ]; then
+  if [ -w $log_file ]; then
     log_call_stack
   fi
-  
+
   exit 1
 }
 
@@ -55,7 +55,7 @@ function exit_on_error() {
   if [ ${code} -gt 0 ]; then
     print_and_log "The command [${@}] run as user $USER $(red FAILED)" \
       "(the command exited with code ${code}), I'll exit now :-("
-    print "See $log for further details."
+    print "See $log_file for further details."
     remove_file_if_exists $lock_file
     remove_pid_and_exit_in_error
   fi
@@ -86,14 +86,14 @@ function print() {
 ##
 ## $@ :: list of strings
 function log() {
-  if [ -z $log ]; then
+  if [ -z $log_file ]; then
     return
   fi
 
   # cannot use run wrapper her, it'll trigger an eternal loop.
-  fail_safe_run mkdir -p $(dirname $log)
-  fail_safe_run touch $log
-  echo $(get_id) $@ >> $log
+  fail_safe_run mkdir -p $(dirname $log_file)
+  fail_safe_run touch $log_file
+  echo $(get_id) $@ >> $log_file
 }
 
 function print_and_log() {
@@ -106,13 +106,13 @@ function log_call_stack() {
 
   # skipping i=0 as this is log_call_stack itself
   for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
-    echo -n  ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}:${FUNCNAME[$i]}"()" >> $log
+    echo -n  ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}:${FUNCNAME[$i]}"()" >> $log_file
     if [ -e ${BASH_SOURCE[$i]} ]; then
-      echo -n " => " >> $log
+      echo -n " => " >> $log_file
       sed -n "${BASH_LINENO[$i-1]}p" ${BASH_SOURCE[$i]} | \
-        sed "s#^[ \t]*##g" >> $log
+        sed "s#^[ \t]*##g" >> $log_file
     else
-      echo "" >> $log
+      echo "" >> $log_file
     fi
   done
 }
