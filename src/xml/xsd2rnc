@@ -1,17 +1,171 @@
 #! /usr/bin/env bash
 
 rngconv_home=/opt/rngconv
+trang_jar=/usr/share/java/trang.jar
+emacs_rnc_dir=$HOME/.emacs.d/xml/jboss-8
 
-xsd_file=$1
-base_filename=$(basename ${xsd_file} .xsd)
-rnc_file=${base_filename}.rnc
-dir=$(dirname $xsd_file)
+# internals, hands off
+dependency_list=$(dirname $0)/../common/indispensable.sh
+tmp_schema_file=$(mktemp)
 
-java -jar $rngconv_home/rngconv.jar \
-  $xsd_file \
-  > ${dir}/${base_filename}.rng
-trang \
-  -I rng \
-  -O rnc \
-  ${dir}/${base_filename}.rng \
-  ${dir}/${base_filename}.rnc
+function bootstrap_thyself() {
+  for dependency in $dependency_list; do
+    source $dependency  || {
+      echo $(basename $0) needs $dependency to run.
+      exit 1
+    }
+  done
+
+  make_dir $emacs_rnc_dir
+}
+
+function assert_environment_ok() {
+  :
+}
+
+function print_usage() {
+  :
+}
+
+function print_information_on_obtaining_trang() {
+  :
+}
+
+function print_information_on_obtaining_rngconv() {
+  :
+}
+
+function read_user_input() {
+  # TODO check that $el is .xsd
+
+  xsd_file=$1
+  dir=$(dirname $xsd_file)
+  base_filename=$(basename $xsd_file .xsd)
+  rng_file=$(get_rng_file $xsd_file)
+  rnc_file=${base_filename}.rnc
+}
+
+## $1 :: the XSD file
+function get_rng_file() {
+  echo $(basename $1 .xsd).rng
+}
+
+## $1 :: the XSD file
+function get_rnc_file() {
+  echo $(basename $1 .xsd).rnc
+}
+
+## Generate XML for using with Emacs/nxml and its schema.xml mappings
+## file.
+##
+## $1 :: the XSD
+function generate_emacs_schema_xml() {
+  local xsd_file=$1
+  local rng_file=$(get_rng_file $xsd_file)
+  local rnc_file=$(get_rnc_file $xsd_file)
+
+  print "Generating Emacs/nxml schema XML snippet for" \
+    $(basename $xsd_file) "..."
+
+  local default_namesapce=$(
+    sed -n 's/.*targetNamespace="\([^"]*\).*/\1/p' $xsd_file
+  )
+
+  # alternatively, depend on xml_grep and do XPATH
+  # /grammar/choice/element
+  local root_element=$(
+    sed -n 's#[ ]*[|] element \([^ ]*\) .*#\1#p' \
+      $dir/${rnc_file} | \
+      head -1
+  )
+
+  local type_id=$(basename $rng_file)
+  cat >> $tmp_schema_file <<EOF
+  <!-- nxml mappings for schema: ${type_id} -->
+  <typeId
+    id="${type_id}"
+    uri="${emacs_rnc_dir}/${rnc_file}"
+  />
+  <namespace
+    ns="${default_namesapce}"
+    typeId="${type_id}"
+  />
+  <documentElement
+    localName="${root_element}"
+    typeId="${type_id}"
+  />
+
+EOF
+}
+
+## $1 :: the XSD file
+function convert_xsd_to_rnc() {
+  local xsd_file=$1
+  print "Converting" $(basename $xsd_file) "to RNC ..."
+
+  if [ ! -e $dir/$(get_rng_file $xsd_file) ]; then
+    java -jar $rngconv_home/rngconv.jar \
+      $xsd_file \
+      > ${dir}/$(get_rng_file $xsd_file)
+  else
+    print "RNG alreay exists, skipping"
+  fi
+
+  if [ ! -e $dir/$(get_rnc_file $xsd_file) ]; then
+    java -jar $trang_jar \
+      -I rng \
+      -O rnc \
+      $dir/$(get_rng_file $xsd_file) \
+      $dir/$(get_rnc_file $xsd_file)
+  else
+    print "RNC alreay exists, skipping"
+  fi
+
+  if [ ! -e $dir/$(get_rnc_file $xsd_file) ]; then
+    return
+  fi
+
+  print "Copying" $(get_rnc_file $xsd_file) "to" $emacs_rnc_dir
+  run cp $dir/$(get_rnc_file $xsd_file) $emacs_rnc_dir
+}
+
+function print_emacs_schema_header() {
+  cat > $tmp_schema_file <<EOF
+<?xml version="1.0"?>
+<locatingRules xmlns="http://thaiopensource.com/ns/locating-rules/1.0">
+EOF
+}
+
+function print_emacs_schema_footer() {
+  cat >> $tmp_schema_file <<EOF
+</locatingRules>
+EOF
+}
+
+function print_emacs_user_usage_message() {
+  cat <<EOF
+I've created a schema.xml file you may use, either copy the contents
+of it and merge it with your existing $HOME/.emacs.d/schemas.xml or
+just copy it to $HOME/.emacs.d/schemas.xml for Emacs/nxml-mode to pick
+it up.
+
+Generated schema.xml: $tmp_schema_file
+EOF
+
+}
+
+bootstrap_thyself
+assert_environment_ok
+read_user_input "$@"
+
+print_emacs_schema_header
+
+for el in $@; do
+  convert_xsd_to_rnc $el
+  generate_emacs_schema_xml $el
+done
+
+print_emacs_schema_footer
+print_emacs_user_usage_message
+
+
