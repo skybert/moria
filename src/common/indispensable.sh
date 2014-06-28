@@ -5,6 +5,7 @@
 # You may override this log file in your script, otherwise, you'll get
 # a log file called .<myscript>.log in your home directory.
 log_file=$HOME/.$(basename $0).log
+lock_file=$HOME/.$(basename $0).log
 
 function print_and_log() {
   print "$@"
@@ -20,6 +21,29 @@ function make_dir() {
       run mkdir -p "$el"
     fi
   done
+}
+
+function create_lock() {
+  if [ -e $lock_file ]; then
+    # TODO could exit in error here.
+    return
+  fi
+
+  run touch $lock_file
+}
+
+function remove_lock() {
+  remove_file_if_exists $lock_file
+}
+
+## $1 :: the file.
+function get_age_of_file_in_seconds_since_epoch() {
+  local file=$1
+  if [ ! -e $file ]; then
+    return
+  fi
+
+  stat --format %Y $file
 }
 
 function get_human_time() {
@@ -133,6 +157,4 @@ function log_call_stack() {
     fi
   done
 }
-
-
 
