@@ -36,29 +36,6 @@ function remove_lock() {
   remove_file_if_exists $lock_file
 }
 
-## $1 :: the file.
-function get_age_of_file_in_seconds_since_epoch() {
-  local file=$1
-  if [ ! -e $file ]; then
-    return
-  fi
-
-  stat --format %Y $file
-}
-
-function get_human_time() {
-  local seconds_worked=$1
-
-  local days=$(( seconds_worked / ( 60 * 60 * 24 ) ))
-  local seconds_left=$(( seconds_worked - ( $days * 60 * 60 * 24 ) ))
-  local hours=$(( seconds_left / ( 60 * 60 ) ))
-  local seconds_left=$(( seconds_left - ( $hours * 60 * 60 ) ))
-  local minutes=$(( seconds_left / 60 ))
-  local seconds_left=$(( seconds_left - $minutes * 60 ))
-
-  echo "${hours}h ${minutes}m ${seconds_left}s"
-}
-
 function run() {
   "${@}" 1>>$log_file 2>>$log_file
   exit_on_error $@
@@ -158,3 +135,6 @@ function log_call_stack() {
   done
 }
 
+now=$(dat+e +%s)
+file_age=$(get_age_of_file_in_seconds_since_epoch ~/.emacs)
+echo age=$(( now - file_age ))
