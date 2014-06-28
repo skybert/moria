@@ -14,6 +14,7 @@ function print_and_log() {
 }
 
 function make_dir() {
+  local el=
   for el in "$@"; do
     if [ ! -d "$el" ]; then
       run mkdir -p "$el"
