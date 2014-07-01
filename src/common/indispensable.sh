@@ -135,6 +135,6 @@ function log_call_stack() {
   done
 }
 
-now=$(dat+e +%s)
-file_age=$(get_age_of_file_in_seconds_since_epoch ~/.emacs)
-echo age=$(( now - file_age ))
+# now=$(date +%s)
+# file_age=$(get_age_of_file_in_seconds_since_epoch ~/.emacs)
+# echo age=$(( now - file_age ))
