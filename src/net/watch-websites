@@ -1,6 +1,14 @@
 #! /usr/bin/env bash
 
-source /usr/share/moria/text/color.sh
+# Command which watches the load times of a number of websties.
+#
+# by torstein
+#
+# Example usage:
+#
+# watch-websites www.spiegel.de edition.cnn.com example.com
+
+source $(dirname $0)/../common/text/color.sh
 
 ## $1 :: start
 ## $@ :: end
@@ -17,29 +25,14 @@ function get_load_time() {
 function check_site() {
   local start=$(date +%s)
   local full="$(
-    wget -S -O - --quiet http://$1 2>&1
+    curl -v http://$1 2>&1
   )"
   local end=$(date +%s)
 
-  be=$(
-    echo "$full" | \
-      grep X-Cache-Host | \
-      cut -d':' -f2
-  )
-  if [ -z "$be" ]; then
-    be="n/a"
-  fi
-  
-  title=$(
-    echo "$full" | \
-      grep -A 1 '<title>' | \
-      grep -v '<title>'
-  )
-  echo $(date +%H:%M:%S) $1 $(get_load_time $start $end) \
-    $(echo "$full" | wc -c) \
-    $be \
-    $(echo $title | sed 's/ /-/g')
-  
+  echo $(date +%H:%M:%S) $1 \
+    $(get_load_time $start $end) \
+    $(echo "$full" | sed -n 's#[<][ ]HTTP/.* \([0-9]*\) .*#\1#p') \
+    $(echo "$full" | wc -c)
 }
 
 function check_all_sites() {
