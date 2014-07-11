@@ -65,9 +65,9 @@ function upload_to_picasa() {
   create_album_if_doesnt_exist "$album_name"
   local start_time=$(date +%s)
   google picasa post "$album_name" "$@" >> $log_file 2>> $log_file
-  log "Posting $@ took " \
+  log "Posting $(basename $@) took " \
     $(( $(date +%s) - ${start_time} )) \
-    " seconds"
+    "seconds"
   
   exit_on_error google picasa post "$album_name"
   echo $1 >> $state_file
