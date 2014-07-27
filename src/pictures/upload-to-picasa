@@ -12,6 +12,10 @@ function log() {
   echo "$(date) $@" >> $log_file
 }
 
+function print() {
+  echo "$@"
+}
+
 function exit_on_error() {
   if [ $? -gt 0 ]; then
     log "The command [ $@ ] failed :-( Exiting."
@@ -62,10 +66,12 @@ function upload_to_picasa() {
   )
 
   local album_name=$(date --date=$file_date "+%B %Y")
+  # hack
+  album_name="Taiwan & Hong Kong 2014"
   create_album_if_doesnt_exist "$album_name"
   local start_time=$(date +%s)
   google picasa post "$album_name" "$@" >> $log_file 2>> $log_file
-  log "Posting $(basename $@) took " \
+  log "Posting $(basename $@) took" \
     $(( $(date +%s) - ${start_time} )) \
     "seconds"
   
@@ -94,7 +100,12 @@ check_input $@
 create_lock_or_exit_if_exists
 log "Started @ $(date)"
 
-find $dir -iname "*.jp*g" 2>/dev/null | while read f; do
+files=$(find $dir -iname "*.jp*g" 2>/dev/null)
+number_of_files=$(echo "$files" | wc -l)
+i=0
+for f in $files; do
+  ((i++))
+  print "Uploading file #"$i "of" $number_of_files    
   upload_to_picasa "$f"
 done
 
