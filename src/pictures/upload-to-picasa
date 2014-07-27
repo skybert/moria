@@ -1,32 +1,19 @@
-#! /usr/bin/env bash
+#! /bin/bash -x
 
 # Uploads pictures to picasa, maintains a local database of which
 # files have already been uploaded. Selects the album name based on
 # the date of the pictures.
 
-state_file=$HOME/.$(basename $0).state
-lock_file=$HOME/.$(basename $0).lock
-log_file=$HOME/.$(basename $0).log
+# internals, hands off
+dependency_list=$(dirname $0)/../common/indispensable.sh
 
-function log() {
-  echo "$(date) $@" >> $log_file
-}
-
-function print() {
-  echo "$@"
-}
-
-function exit_on_error() {
-  if [ $? -gt 0 ]; then
-    log "The command [ $@ ] failed :-( Exiting."
-    rm $lock_file
-    exit 1
-  fi
-}
-
-function run() {
-  "$@" >> $log_file 2>> $log_file
-  exit_on_error "$@"
+function bootstrap_thyself() {
+  for dependency in $dependency_list; do
+    source $dependency  || {
+      echo $(basename $0) needs $dependency to run.
+      exit 1
+    }
+  done
 }
 
 function create_lock_or_exit_if_exists() {
@@ -96,6 +83,7 @@ function remove_lock_file() {
   fi
 }
 
+bootstrap_thyself
 check_input $@
 create_lock_or_exit_if_exists
 log "Started @ $(date)"
