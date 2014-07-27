@@ -64,10 +64,6 @@ function remove_file_if_exists() {
 }
 
 function remove_pid_and_exit_in_error() {
-  if [[ -z $pid_file && -e $pid_file ]]; then
-    rm $pid_file
-  fi
-
   # this method is also used from bootstrapping methods in scripts
   # where the log file may not yet exist, hence, we test for its
   # existence here before logging the call/stack trace.
@@ -75,7 +71,13 @@ function remove_pid_and_exit_in_error() {
     log_call_stack
   fi
 
-  exit 1
+  if [[ -z $pid_file && -e $pid_file ]]; then
+    cat $pid_file | xargs kill
+    rm $pid_file
+  fi
+
+  # if we didn't have a PID file, just kill the BASH process.
+  kill $$
 }
 
 function exit_on_error() {
