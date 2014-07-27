@@ -5,7 +5,12 @@
 # You may override this log file in your script, otherwise, you'll get
 # a log file called .<myscript>.log in your home directory.
 log_file=$HOME/.$(basename $0).log
-lock_file=$HOME/.$(basename $0).log
+lock_file=$HOME/.$(basename $0).lock
+state_file=$HOME/.$(basename $0).state
+
+function red() {
+  echo -e "\E[37;31m\033[1m${@}\033[0m"
+}
 
 function print_and_log() {
   print "$@"
