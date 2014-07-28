@@ -36,7 +36,10 @@ done
 
 error_dir=$HOME/.$(basename $0)/errors
 log_file=$HOME/.$(basename $0)/log
+state_file=$HOME/.$(basename $0)/state
+
 mkdir -p ${error_dir}
+touch ${state_file}
 
 if [ $(which identify 2>/dev/null | wc -l) -eq 0 ]; then
   echo "You need imagemagick installed to use $(basename $0) :-("
@@ -78,6 +81,11 @@ function sort_and_archive_picture() {
 
   local picture_dir=$target_dir/$date_dir
 
+  if [ $(grep "$1" ${state_file} | wc -l) -gt 0 ]; then
+      log "Skipping already imported file" $1
+      return
+  fi
+
   if [ -e ${picture_dir}/$(basename $1) ]; then
       log "Skipping already imported" \
 	  $(basename ${picture_dir})/$(basename $1)
@@ -88,11 +96,6 @@ function sort_and_archive_picture() {
     mkdir -p $picture_dir
   fi
 
-  if [ -e "$picture_dir/$(basename $1)" ]; then
-    log "$picture_dir/$(basename $1) already exists, skipping it."
-    return
-  fi
-
   if [ ${move_originals-0} -eq 0 ]; then
     print_and_log "Copying $1 -> $picture_dir ..."
     cp "$1" $picture_dir/
@@ -100,6 +103,8 @@ function sort_and_archive_picture() {
     print_and_log "Moving $1 -> $picture_dir ..."
     mv "$1" $picture_dir/
   fi
+
+  echo "$1" >> ${state_file}
 }
 
 function remove_rempty_directories() {
