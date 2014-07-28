@@ -35,15 +35,13 @@ function create_album_if_doesnt_exist() {
 
   log "Creating new album $@ ..."
 
-  # not running google command in run wrapper, seemed to cause
-  # problems with passing string arguments around (containing spaces).
-  google picasa create "$@" >>$log_file 2>>$log_file
-  exit_on_error "$@"
+  run google picasa create "$@"
 }
 
 ## $1: file
 function upload_to_picasa() {
   if [ $(grep "$@" $state_file 2>/dev/null | wc -l) -gt 0 ]; then
+    print_and_log "Already uploaded" $(basename "$@") "-> skipping"
     return
   fi
 
@@ -62,7 +60,7 @@ function upload_to_picasa() {
   log "Posting $(basename $@) took" \
     $(( $(date +%s) - ${start_time} )) \
     "seconds"
-  
+
   exit_on_error google picasa post "$album_name"
   echo $1 >> $state_file
 }
@@ -94,7 +92,7 @@ number_of_files=$(echo "$files" | wc -l)
 i=0
 for f in $files; do
   ((i++))
-  print "Uploading file #"$i "of" $number_of_files    
+  print "Uploading file #"$i "of" $number_of_files
   upload_to_picasa "$f"
 done
 
