@@ -41,7 +41,7 @@ function create_album_if_doesnt_exist() {
 ## $1: file
 function upload_to_picasa() {
   if [ $(grep "$@" $state_file 2>/dev/null | wc -l) -gt 0 ]; then
-    print_and_log "Already uploaded" $(basename "$@") "-> skipping"
+    print_and_log "-> skipping, have already uploaded" $(basename "$@")
     return
   fi
 
@@ -57,9 +57,9 @@ function upload_to_picasa() {
   create_album_if_doesnt_exist "$album_name"
   local start_time=$(date +%s)
   google picasa post "$album_name" "$@" >> $log_file 2>> $log_file
-  log "Posting $(basename $@) took" \
+  print_and_log "-> uploaded $(basename $@) in" \
     $(( $(date +%s) - ${start_time} )) \
-    "seconds"
+    "seconds."
 
   exit_on_error google picasa post "$album_name"
   echo $1 >> $state_file
