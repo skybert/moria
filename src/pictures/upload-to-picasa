@@ -87,7 +87,7 @@ check_input $@
 create_lock_or_exit_if_exists
 log "Started @ $(date)"
 
-files=$(find $dir -iname "*.jp*g" 2>/dev/null)
+files=$(find $dir -iname "*.jp*g" 2>/dev/null | sort)
 number_of_files=$(echo "$files" | wc -l)
 i=0
 for f in $files; do
