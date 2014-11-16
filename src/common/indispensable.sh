@@ -95,6 +95,12 @@ function get_id() {
   echo "[$(basename $0)]"
 }
 
+function debug() {
+  if [[ ${verbose-0} -eq 1 ]]; then
+      echo "[debug] $@"
+  fi
+}
+
 function print() {
   if [[ "$quiet" == 1 ]]; then
     echo $@ | fmt

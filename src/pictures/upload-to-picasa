@@ -18,9 +18,9 @@ function bootstrap_thyself() {
 
 function create_lock_or_exit_if_exists() {
   if [ -e $lock_file ]; then
-    print_and_log "An instance of $(basename $0) is already running." \
-	"If you believe this is incorrect, delete" $lock_file
-    exit 1
+      print_and_log "An instance of $(basename $0) is already running." \
+                    "If you believe this is incorrect, delete" $lock_file
+      exit 1
   fi
 
   touch $lock_file
@@ -30,7 +30,7 @@ function create_lock_or_exit_if_exists() {
 function create_album_if_doesnt_exist() {
   # this test takes ~1 second
   if [ $(google picasa list-albums | grep "$@" | wc -l) -gt 0 ]; then
-    return
+      return
   fi
 
   log "Creating new album $@ ..."
@@ -41,60 +41,97 @@ function create_album_if_doesnt_exist() {
 ## $1: file
 function upload_to_picasa() {
   if [ $(grep "$@" $state_file 2>/dev/null | wc -l) -gt 0 ]; then
-    print_and_log "-> skipping, have already uploaded" $(basename "$@")
-    return
+      print_and_log "-> skipping, have already uploaded" $(basename "$@")
+      return
   fi
 
   local file_date=$(
     identify -format  "%[EXIF:DateTimeOriginal]" "$1" | \
-      sed 's#:#-#g' | \
-      cut -d' ' -f1
-  )
+        sed 's#:#-#g' | \
+        cut -d' ' -f1
+        )
 
-  local album_name=$(date --date=$file_date "+%B %Y")
-  # hack
-  album_name="Taiwan & Hong Kong 2014"
   create_album_if_doesnt_exist "$album_name"
   local start_time=$(date +%s)
   google picasa post "$album_name" "$@" >> $log_file 2>> $log_file
   print_and_log "-> uploaded $(basename $@) in" \
-    $(( $(date +%s) - ${start_time} )) \
-    "seconds."
+                $(( $(date +%s) - ${start_time} )) \
+                "seconds."
 
   exit_on_error google picasa post "$album_name"
   echo $1 >> $state_file
 }
 
+function print_usage_and_exit() {
+  cat <<EOF
+Usage: $(basename $0) [OPTIONS]"
+
+OPTIONS
+
+--dir     Directory where the pictures reside
+--album   Album name to which you want to upload the pictures
+--verbose Make $(basename $0) more verbose
+EOF
+
+  exit 1
+}
+
 function check_input() {
-  if [[ $1 && ! -d $1 ]]; then
-    echo "Usage: $(basename $0) <directory>"
-    exit 1
-  elif [ $1 ]; then
-    dir=$1
-  else
-    dir=$HOME/pictures/$(date +%Y)
-  fi
+  # default location and album name
+  dir=$HOME/pictures/$(date +%Y)/$(date +%Y-%m)
+  album_name=$(date --date=$file_date "+%B %Y")
+
+  local el=
+  for el in "$@"; do
+    if [[ "$el" == "--help" ]]; then
+        print_usage_and_exit
+    elif [[ "$el" == "--album" ]]; then
+        next_is_album=1
+        album_name=""
+    elif [[ "$el" == "--dir" ]]; then
+        next_is_album=0
+        next_is_dir=1
+    elif [[ "$el" == "--verbose" ]]; then
+        verbose=1
+    elif [[ ${next_is_album-0} -eq 1 ]]; then
+        if [[ -n "${album_name}" ]]; then
+            album_name=${album_name}" "${el}
+        else
+          album_name=$el
+        fi
+    elif [[ ${next_is_dir-0} -eq 1 ]]; then
+      dir=$el
+    fi
+  done
 }
 
 function remove_lock_file() {
   if [ -e $lock_file ]; then
-    rm $lock_file
+      rm $lock_file
   fi
 }
 
-bootstrap_thyself
-check_input $@
-create_lock_or_exit_if_exists
-log "Started @ $(date)"
+function main() {
+  bootstrap_thyself
+  check_input $@
 
-files=$(find $dir -iname "*.jp*g" 2>/dev/null | sort)
-number_of_files=$(echo "$files" | wc -l)
-i=0
-for f in $files; do
-  ((i++))
-  print "Uploading file #"$i "of" $number_of_files
-  upload_to_picasa "$f"
-done
+  debug album_name=$album_name
+  debug dir=$dir
 
-remove_lock_file
-log "Finished @ $(date)"
+  create_lock_or_exit_if_exists
+  log "Started @ $(date)"
+
+  local files=$(find $dir -iname "*.jp*g" 2>/dev/null | sort)
+  local number_of_files=$(echo "$files" | wc -l)
+  local i=0
+  for f in $files; do
+    ((i++))
+    print "Uploading file #"$i "of" $number_of_files
+    upload_to_picasa "$f"
+  done
+
+  remove_lock_file
+  log "Finished @ $(date)"
+}
+
+main "$@"
