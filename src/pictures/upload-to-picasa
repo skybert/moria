@@ -126,7 +126,7 @@ function main() {
   local i=0
   for f in $files; do
     ((i++))
-    print "Uploading file #"$i "of" $number_of_files
+    print "Uploading file #"$i "of" $number_of_files "to" $album_name
     upload_to_picasa "$f"
   done
 
