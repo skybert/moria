@@ -4,6 +4,8 @@
 # files have already been uploaded. Selects the album name based on
 # the date of the pictures.
 
+set -euo pipefail
+
 # internals, hands off
 dependency_list=$(dirname $0)/../common/indispensable.sh
 
@@ -45,12 +47,6 @@ function upload_to_picasa() {
       return
   fi
 
-  local file_date=$(
-    identify -format  "%[EXIF:DateTimeOriginal]" "$1" | \
-        sed 's#:#-#g' | \
-        cut -d' ' -f1
-        )
-
   create_album_if_doesnt_exist "$album_name"
   local start_time=$(date +%s)
   google picasa post "$album_name" "$@" >> $log_file 2>> $log_file
@@ -79,7 +75,7 @@ EOF
 function check_input() {
   # default location and album name
   dir=$HOME/pictures/$(date +%Y)/$(date +%Y-%m)
-  album_name=$(date --date=$file_date "+%B %Y")
+  album_name=$(date "+%B %Y")
 
   local el=
   for el in "$@"; do
@@ -94,11 +90,8 @@ function check_input() {
     elif [[ "$el" == "--verbose" ]]; then
         verbose=1
     elif [[ ${next_is_album-0} -eq 1 ]]; then
-        if [[ -n "${album_name}" ]]; then
-            album_name=${album_name}" "${el}
-        else
-          album_name=$el
-        fi
+        album_name=$el
+        next_is_album=0
     elif [[ ${next_is_dir-0} -eq 1 ]]; then
       dir=$el
     fi
@@ -113,7 +106,7 @@ function remove_lock_file() {
 
 function main() {
   bootstrap_thyself
-  check_input $@
+  check_input "$@"
 
   debug album_name=$album_name
   debug dir=$dir
@@ -125,8 +118,8 @@ function main() {
   local number_of_files=$(echo "$files" | wc -l)
   local i=0
   for f in $files; do
-    ((i++))
-    print "Uploading file #"$i "of" $number_of_files "to" $album_name
+    i=$(( i + 1 ))
+    print "Uploading file $(basename $f) #"$i "of" $number_of_files "to" $album_name
     upload_to_picasa "$f"
   done
 
