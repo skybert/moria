@@ -102,7 +102,7 @@ function debug() {
 }
 
 function print() {
-  if [[ "$quiet" == 1 ]]; then
+  if [[ "${quiet-0}" == 1 ]]; then
     echo $@ | fmt
     return
   fi
