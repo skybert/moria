@@ -19,7 +19,7 @@ s#nullSafeGet(ResultSet Object owner)#nullSafeGet(ResultSet rs, String[] names, 
 s#nullSafeGet(ResultSet rs, String[[][]] names, Object owner)#nullSafeGet(ResultSet rs, String[] names, Object owner)#g
 s#nullSafeSet(PreparedStatement st, Object value, int index)#nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)#
 s#nullSafeSet(PreparedStatement ps, Object value, int index)#nullSafeSet(PreparedStatement ps, Object value, int index, SessionImplementor session)#
-s#nullSafeGet(ResultSet rs, String\[\] names, Object owner)#nullSafeGet(ResultSet rs , String[] names, SessionImplementor session , Object owner)#g
+s#nullSafeGet(ResultSet rs, String\[\] names, Object owner)#nullSafeGet(ResultSet rs, String[] names, SessionImplementor session , Object owner)#g
 
 ############################################
 # Hibernate imports and constants
