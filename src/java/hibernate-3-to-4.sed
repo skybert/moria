@@ -24,14 +24,21 @@ s#nullSafeGet(ResultSet rs, String\[\] names, Object owner)#nullSafeGet(ResultSe
 ############################################
 # Hibernate imports and constants
 ############################################
+s#org.hibernate.Hibernate.BIG_DECIMAL#org.hibernate.type.BigDecimalType.INSTANCE#
+s#org.hibernate.Hibernate.DATE#org.hibernate.type.DateType.INSTANCE#
+s#org.hibernate.Hibernate.DOUBLE#org.hibernate.type.DoubleType.INSTANCE#
 s#org.hibernate.Hibernate.INTEGER#org.hibernate.type.IntegerType.INSTANCE#
 s#org.hibernate.Hibernate.LONG#org.hibernate.type.LongType.INSTANCE#
 s#org.hibernate.Hibernate.STRING#org.hibernate.type.StringType.INSTANCE#
 s#Hibernate.BIG_DECIMAL#BigDecimalType.INSTANCE#
+s#Hibernate.DATE#DateType.INSTANCE#
+s#Hibernate.DOUBLE#DoubleType.INSTANCE#
 s#Hibernate.INTEGER#IntegerType.INSTANCE#
+s#Hibernate.LONG#LongType.INSTANCE#
 s#Hibernate.LONG#LongType.INSTANCE#
 s#Hibernate.SHORT#ShortType.INSTANCE#
 s#Hibernate.STRING#StringType.INSTANCE#
+
 s#org.hibernate.classic.Session#org.hibernate.Session#g
 s#org.hibernate.collection.PersistentCollection#org.hibernate.collection.spi.PersistentCollection#g
 s#org.hibernate.collection.PersistentSet#org.hibernate.collection.internal.PersistentSet##g
