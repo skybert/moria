@@ -5,12 +5,17 @@
 #
 # Usage:
 # $ find -type f -name "*.java" -o -name "*.xml" \
-#        -exec sed -i -f /path/to/migrate-from-hibernate-3-to-4.sed {} \;
+#        -exec sed -i -b -f /path/to/migrate-from-hibernate-3-to-4.sed {} \;
 
 ############################################
 ## Maven dependencies
 ############################################
 s#<artifactId>hibernate</artifactId>#<artifactId>hibernate-core</artifactId>#
+
+############################################
+## Hibernate dialect
+############################################
+s#org.hibernate.dialect.SybaseDialect#org.hibernate.dialect.SybaseASE15Dialect#
 
 ############################################
 ## Hibernate methods
@@ -30,6 +35,7 @@ s#org.hibernate.Hibernate.DOUBLE#org.hibernate.type.DoubleType.INSTANCE#
 s#org.hibernate.Hibernate.INTEGER#org.hibernate.type.IntegerType.INSTANCE#
 s#org.hibernate.Hibernate.LONG#org.hibernate.type.LongType.INSTANCE#
 s#org.hibernate.Hibernate.STRING#org.hibernate.type.StringType.INSTANCE#
+
 s#Hibernate.BIG_DECIMAL#BigDecimalType.INSTANCE#
 s#Hibernate.DATE#DateType.INSTANCE#
 s#Hibernate.DOUBLE#DoubleType.INSTANCE#
@@ -56,8 +62,15 @@ s#Environment.CACHE_PROVIDER_CONFIG_CONFIG#Environment.CACHE_PROVIDER_CONFIG#
 s#org.hibernate.cache.NoCacheProvider#org.hibernate.cache.internal.NoCachingRegionFactory#
 s#org.springframework.orm.hibernate3.HibernateTransactionManager#org.springframework.orm.hibernate4.HibernateTransactionManager#
 s#org.springframework.orm.hibernate3.LocalSessionFactoryBean#org.springframework.orm.hibernate4.LocalSessionFactoryBean#
+s#org.springframework.orm.hibernate3.SessionFactoryUtils#org.springframework.orm.hibernate4.SessionFactoryUtils#
+s#org.springframework.orm.hibernate3.support.IdTransferringMergeEventListener#org.springframework.orm.hibernate4.support.IdTransferringMergeEventListener#
 
 # these two go together
 s#org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean#org.springframework.orm.hibernate4.LocalSessionFactoryBean#
 s#AnnotationSessionFactoryBean#LocalSessionFactoryBean#g
 
+############################################
+## joda
+############################################
+s#org.joda.time.contrib.hibernate.PersistentDate#org.jadira.usertype.dateandtime.joda.PersistentDate#
+s#org.joda.time.contrib.hibernate.PersistentLocalDate#org.jadira.usertype.dateandtime.joda.PersistentLocalDate#
