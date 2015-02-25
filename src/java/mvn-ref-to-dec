@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+# Usage: mvn-ref-to-dec commons-lang:commons-lang:jar:2.6:compile
+
+main() {
+    for el in $@; do
+        echo $el | sed -f $(dirname $0)/$(basename ${0}).sed
+    done
+}
+
+main "$@"
