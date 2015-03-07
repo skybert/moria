@@ -1,0 +1,119 @@
+#! /usr/bin/env bash
+
+## Command for adding new entries to the wpa_supplicant configuration
+## file
+
+default_conf_file=/etc/network/wireless-networks.conf
+
+print_usage() {
+  cat <<EOF
+Usage: $(basename $0) [OPTIONS]
+
+OPTIONS
+--conf     <file>      Configuration file
+--password <password>  Password
+--ssid     <ssid>      SSID
+--help     Don't panic
+EOF
+}
+
+create_conf_header() {
+  local conf_file=$1
+
+  cat > $conf_file <<EOF
+ctrl_interface=DIR=/var/run/wpa_supplicant
+EOF
+}
+
+add_network() {
+  local conf_file=$1
+  local ssid=$2
+  local psk=$3
+  local key_management=WPA-PSK
+
+  cat >> $conf_file <<EOF
+network={
+  ssid="${ssid}"
+  scan_ssid=1
+  key_mgmt=${key_management}
+  psk="${psk}"
+}
+EOF
+}
+
+read_user_input() {
+  local conf_file=
+  local ssid=
+  local password=
+
+  for el in $@; do
+    if [[ "$el" == "--conf" ]]; then
+        next_is_file=1
+    elif [[ "$el" == "--ssid" ]]; then
+        next_is_ssid=1
+    elif [[ "$el" == "--help" ]]; then
+        echo print_the_usage=1
+    elif [[ "$el" == "--password" ]]; then
+        next_is_password=1
+    elif [[ ${next_is_file-0} -eq 1 ]]; then
+        conf_file=$el
+        next_is_file=0
+    elif [[ ${next_is_ssid-0} -eq 1 ]]; then
+        ssid=$el
+        next_is_ssid=0
+    elif [[ ${next_is_password-0} -eq 1 ]]; then
+        password=$el
+        next_is_password=0
+    fi
+  done
+
+  echo conf_file=$conf_file \
+       ssid=$ssid \
+       password=$password
+}
+
+doesnt_already_have_conf() {
+  local conf_file=$1
+  local ssid=$2
+  local result=0
+
+  if [[ -e $conf_file ]]; then
+      result=$(egrep ssid=.*${ssid} $conf_file | wc -l)
+  fi;
+
+  echo $result
+
+}
+
+add_network_if_doesnt_already_exist() {
+  local conf_file=$1
+  local ssid=$2
+
+  if [[ $(doesnt_already_have_conf $conf_file $ssid) -eq 0 ]]; then
+      add_network $conf_file $ssid $password
+  else
+    echo "SSID $ssid is already configured in $conf_file"
+    exit 1
+  fi
+}
+
+create_conf_header_if_doesnt_exist() {
+  local conf_file=$1
+  if [[ ! -e $conf_file ]]; then
+      create_conf_header $conf_file
+  fi
+}
+
+main() {
+  eval $(read_user_input $@)
+
+  if [[ ${print_the_usage-0} -eq 1 ]]; then
+      print_usage
+      exit 0
+  fi
+  create_conf_header_if_doesnt_exist $conf_file
+  add_network_if_doesnt_already_exist  $conf_file $ssid
+
+}
+
+main $@
