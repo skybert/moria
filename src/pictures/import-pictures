@@ -86,9 +86,14 @@ function sort_and_archive_picture() {
       return
   fi
 
+  if [ -e "$picture_dir/$1" ]; then
+      log "Skipping already present file" $1
+      return
+  fi
+
   if [ -e ${picture_dir}/$(basename $1) ]; then
       log "Skipping already imported" \
-	  $(basename ${picture_dir})/$(basename $1)
+    $(basename ${picture_dir})/$(basename $1)
       return
   fi
 
