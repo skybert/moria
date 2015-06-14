@@ -3,6 +3,13 @@
 # by torstein.k.johansen@gmail.com
 
 function read_user_input() {
+  if [ $# -ne 2 ]; then
+      cat <<EOF
+Usage: $(basename $0) <from-dir> <to-dir>
+EOF
+      exit 1
+  fi
+
   for el in $@; do
     if [[ "$el" == "--move-originals" ]]; then
       move_originals=1
@@ -13,15 +20,11 @@ function read_user_input() {
   # from/source
   if [ $1 ]; then
     src_dir=$1
-  else
-    src_dir=$HOME/put_the_new_pictures_in_here
   fi
 
   # to/target
   if [ $2 ]; then
     target_dir=$2
-  else
-    target_dir=/var/gallery
   fi
 }
 
