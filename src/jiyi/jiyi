@@ -1,0 +1,47 @@
+#! /usr/bin/env bash
+
+## Backup a configured list of directories to a configured 
+## remote host and path.
+
+set -e
+set -u
+set -o pipefail
+
+log_file=$HOME/.$(basename $0).log
+rsync_opts="-az"
+
+read_conf() {
+  local file=$HOME/.$(basename $0).conf
+  if [ -r ${file} ]; then
+    source ${file}
+  fi
+
+}
+
+ensure_sanity() {
+  :
+}
+
+print() {
+  local id=$(basename $0)
+  echo "${id} :: $@"
+}
+
+keep_memories() {
+  local dir=
+  for dir in ${backup_dir_list}; do
+    print "Backup up $dir to ${target_host} ..."
+    rsync ${rsync_opts} -e "ssh -p ${target_port-22}" \
+      --log-file=${log_file} \
+      ${dir}/ \
+      ${target_user-${USER}}@${target_host}:${target_base_dir}/${dir}/
+  done
+}
+
+main() {
+  read_conf
+  ensure_sanity
+  keep_memories
+}
+
+main
