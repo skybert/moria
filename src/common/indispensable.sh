@@ -4,6 +4,7 @@
 
 # You may override this log file in your script, otherwise, you'll get
 # a log file called .<myscript>.log in your home directory.
+conf_file=$HOME/.$(basename $0).conf
 log_file=$HOME/.$(basename $0).log
 lock_file=$HOME/.$(basename $0).lock
 state_file=$HOME/.$(basename $0).state
