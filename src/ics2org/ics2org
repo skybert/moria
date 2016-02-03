@@ -1,33 +1,74 @@
 #! /usr/bin/env bash
 
-file=$1
-out_file=/tmp/test.org
-echo "" > $out_file
+read_user_input() {
+  url=$1
+  output_file=$2
+}
 
-sed -n -f $(dirname $0)/ics2org.sed $file | while read line; do
-  if [ $(echo "$line" | grep ^'SCHEDULED' | wc -l) -gt 0 ]; then
-    start_time="$line"
+convert_ics_to_org() {
+  local tmp_file=
+  tmp_file=$(mktemp)
+
+  if [[ "$url" == http* ]]; then
+    curl -s "$url" > "${tmp_file}"
+  else
+    cp "$url" "$tmp_file"
   fi
-  if [ $(echo "$line" | grep ^'\*\*' | wc -l) -gt 0 ]; then
-    summary="$line"
-  fi
-  
-  if [[ -n "${summary}" && -n "${start_time}" ]]; then
-    if [ $(date +%Y%m%d) -gt ${start_time:12:4}${start_time:17:2}${start_time:20:2}  ]; then
-      summary=""
-      start_time=""
+
+  local tmp_dir=
+  tmp_dir=$(mktemp -d)
+
+  sed -n -f $(dirname $0)/ics2org.sed "$tmp_file" | while read line; do
+    # cat "$tmp_file" | while read line; do
+    IFS=: read key value <<< "$line"
+    if [[ "$value" == 1970* ]]; then
       continue
     fi
-    echo date=${start_time:12:4}${start_time:17:2}${start_time:20:2}
 
-    
-  cat >> $out_file <<EOF
-${summary}
-   ${start_time}
-EOF
-  summary=""
-  start_time=""
-fi
-done
+    local start_date=
+    local scheduled_date=
 
-echo $out_file is ready
+    if [[ "$key" == SUMMARY ]]; then
+      echo '00 TODO' "${value}" >> ${tmp_dir}/00.txt
+      echo '00 TODO' "${value}" >> ${tmp_dir}/all.txt
+
+    elif [[ "$key" == "DTSTART;TZID"* ]]; then
+      start_date=$(echo "$value" | sed -r 's#([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2}).*#\1-\2-\3T\4:\5:\6#')
+
+    elif [[ "$key" == DTSTART ]]; then
+      start_date=$(echo "$value" | sed -r 's#([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2}).*#\1-\2-\3T\4:\5:\6Z#')
+    fi
+
+    if [[ -n "${start_date}" ]]; then
+      scheduled_date=$(date -d "${start_date}" '+%Y-%m-%d %H:%M:%S')
+      local now=$(date +%s)
+      local future=$(date -d "${start_date}" '+%s')
+      if [[ ${future} -gt ${now} ]]; then
+        echo "01  SCHEDULED: <${scheduled_date}>" >> ${tmp_dir}/01.txt
+        echo "01  SCHEDULED: <${scheduled_date}>" >> ${tmp_dir}/all.txt
+      else
+        echo "01  COMPLETED: <${scheduled_date}>" >> ${tmp_dir}/01.txt
+        echo "01  COMPLETED: <${scheduled_date}>" >> ${tmp_dir}/all.txt
+      fi
+    fi
+  done
+
+  cat ${tmp_dir}/00.txt | while read line; do
+    echo "$line" | sed 's#^00 #* #'
+    grep -B 1 "$line" "${tmp_dir}/all.txt" | \
+      head -1 | \
+      sed 's#^01##'
+  done
+
+  rm "${tmp_file}"
+  rm -r "${tmp_dir}"
+
+}
+
+main() {
+  read_user_input "$@"
+  convert_ics_to_org "${url}" "${output_file}"
+}
+
+
+main "$@"

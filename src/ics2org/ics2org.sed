@@ -1,20 +1,17 @@
 #! /usr/bin/env sed
 
 /^BEGIN:VEVENT/,/^END:VEVENT/ {
-  /^DTSTART:/ {
-    s/^DTSTART:\([0-9][0-9][0-9][0-9]\)\([0-9][0-9]\)\([0-9][0-9]\).*T.*/SCHEDULED: <\1-\2-\3>/p
-  }
-
+  /^BEGIN:VEVENT/p
+  /^DTSTART:/p
+  /^DTSTART;TZID=/p
   # /^DTEND:/p
   
-  /^SUMMARY/ {
-    s/^SUMMARY:/** TODO /p
-  }
-  
+  /^SUMMARY:/p
+
   # description can be multi line
   /^DESCRIPTION:/,/^[A-Z]/ {
     s/This is an event reminder//
-    s/^DESCRIPTION://p
-    /^[ ]/p
+    /^DESCRIPTION:/p
+    s/^[ ]/DESCRIPTION:/p
   }
 }
