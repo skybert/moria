@@ -54,10 +54,19 @@ convert_ics_to_org() {
   done
 
   cat ${tmp_dir}/00.txt | while read line; do
-    echo "$line" | sed 's#^00 #* #'
-    grep -B 1 "$line" "${tmp_dir}/all.txt" | \
-      head -1 | \
-      sed 's#^01##'
+    local description=
+    local when=
+    description=$(echo "$line" | sed 's#^00 #* #')
+    when=$(
+      grep -B 1 "$line" "${tmp_dir}/all.txt" | \
+        head -1 | \
+        sed 's#^01##')
+    if [[ $(echo "${when}" | grep COMPLETED | wc -l) -gt 0 ]]; then
+      echo "${description/TODO/DONE}"
+    else
+      echo "${description}"
+    fi
+    echo "${when}"
   done
 
   rm "${tmp_file}"
