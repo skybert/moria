@@ -2,6 +2,7 @@
 
 /^BEGIN:VEVENT/,/^END:VEVENT/ {
   /^BEGIN:VEVENT/p
+  /^END:VEVENT/p
   /^DTSTART:/p
   /^DTSTART;TZID=/p
   # /^DTEND:/p
