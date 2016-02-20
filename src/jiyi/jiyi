@@ -30,11 +30,17 @@ print() {
 keep_memories() {
   local dir=
   for dir in ${backup_dir_list}; do
+    if [ ! -d "${dir}" ]; then
+      print "Skipping non existant dir ${dir}"
+      continue
+    fi
+
     print "Backup up $dir to ${target_host} ..."
-    rsync ${rsync_opts} -e "ssh -p ${target_port-22}" \
+    rsync ${rsync_opts} \
+      -e "ssh -p ${target_port-22}" \
       --log-file=${log_file} \
-      ${dir}/ \
-      ${target_user-${USER}}@${target_host}:${target_base_dir}/${dir}/
+      --relative "${dir}" \
+      ${target_user-${USER}}@${target_host}:${target_base_dir}/
   done
 }
 
