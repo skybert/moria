@@ -23,3 +23,9 @@ is_recurring_event() {
     return 1
   fi
 }
+
+get_weekly_recurring_days() {
+  local rrule_line=$1
+  echo "${rrule_line##*BYDAY=}"
+
+}

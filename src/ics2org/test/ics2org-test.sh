@@ -14,6 +14,20 @@ test_can_spot_a_recurring_event() {
   fi
 }
 
+test_can_get_weekly_recurring_days() {
+  local expected=MO,TU,WE,TH,FR
+  local actual=
+  actual=$(get_weekly_recurring_days $(grep ^RRULE "${ics}"))
+  assertEquals "${expected}" "${actual}"
+}
+
+test_can_return_empty_on_non_weekly_recurring_days() {
+  local actual=
+  actual=$(get_weekly_recurring_days $(grep ^BOO "${ics}"))
+  assertNull "${actual}"
+}
+
+
 test_can_spot_a_non_recurring_event() {
   if is_recurring_event "non sense"; then
     fail "Couldn't spot a non recurring event"
