@@ -10,20 +10,13 @@ read_user_input() {
   #  output_file=$2
 }
 
-get_start_date() {
-  local line=$1
-  IFS=: read key value <<< "$line"
-
-  if [[ "$key" == "DTSTART;TZID"* ]]; then
-    echo "$value" | \
-      sed -r 's#([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2}).*#\1-\2-\3T\4:\5:\6#'
-  elif [[ "$key" == DTSTART ]]; then
-    echo "$value" | \
-      sed -r 's#([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2}).*#\1-\2-\3T\4:\5:\6Z#'
-  else
-    echo $line
-  fi
-
+bootstrap_thyself() {
+  local library=
+  library="$(dirname "$0")/lib/$(basename "$0" .sh)-lib.sh"
+  source "${library}" || {
+    echo "Couldn't find library ${library} 😱"
+    exit 1
+  }
 }
 
 convert_ics_to_org() {
@@ -70,7 +63,7 @@ convert_ics_to_org() {
       continue
     else
 
-      start_date=$(get_start_date "${start_line}")
+      start_date=$(get_date "${start_line}")
       if [[ -n "${start_date}" ]]; then
         scheduled_date=$(date -d "${start_date}" '+%Y-%m-%d %H:%M:%S')
         local now=$(date +%s)
@@ -98,6 +91,7 @@ convert_ics_to_org() {
 }
 
 main() {
+  bootstrap_thyself
   read_user_input "$@"
   convert_ics_to_org "${url}" # "${output_file}"
 }
