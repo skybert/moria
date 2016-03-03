@@ -12,7 +12,7 @@ read_user_input() {
 
 bootstrap_thyself() {
   local library=
-  library="$(dirname "$0")/lib/$(basename "$0" .sh)-lib.sh"
+  library="$(dirname "$0")/../lib/$(basename "$0" .sh)-lib.sh"
   source "${library}" || {
     echo "Couldn't find library ${library} 😱"
     exit 1
@@ -43,7 +43,7 @@ convert_ics_to_org() {
   echo 0 > ${counter}
 
 
-  sed -n -f $(dirname $0)/ics2org.sed "$tmp_file" | while read line; do
+  sed -n -f $(dirname $0)/../lib/ics2org.sed "$tmp_file" | while read line; do
     local c=$(< ${counter})
     if [[ "${line}" == "BEGIN:VEVENT" ]]; then
       echo $(( c + 1 )) > ${counter}
@@ -51,37 +51,34 @@ convert_ics_to_org() {
     elif [[ "${line}" == "END:VEVENT" ]]; then
       continue
     else
-      echo "$line" >> "${tmp_dir}/${c}.org"
+      echo "$line" >> "${tmp_dir}/${c}.ics"
     fi
   done
 
 
-  for f in ${tmp_dir}/*.org; do
+  for f in ${tmp_dir}/*.ics; do
     local start_line=$(egrep "DTSTART" $f)
 
     if [[ $(egrep "DTSTART.*${current_year}" "$f" | wc -l) -eq 0 ]]; then
       continue
-    else
-
-      start_date=$(get_date "${start_line}")
-      if [[ -n "${start_date}" ]]; then
-        scheduled_date=$(date -d "${start_date}" '+%Y-%m-%d %H:%M:%S')
-        local now=$(date +%s)
-        local future=$(date -d "${start_date}" '+%s')
-
-        if [[ ${future} -gt ${now} ]]; then
-          sed -n 's#SUMMARY:#* TODO #p' "${f}"
-          echo "  SCHEDULED: <${scheduled_date}>"
-        else
-          sed -n 's#SUMMARY:#* DONE #p' "${f}"
-          echo "  COMPLETED: <${scheduled_date}>"
-        fi
-        sed -n 's#DESCRIPTION:##p' "${f}" | \
-          sed 's#n\([A-Z]\)#\n\1#g' | \
-          sed 's#n\([0-9]\)#\n\1#g' | \
-          sed 's#n$#\n#g'
-      fi
     fi
+
+    start_date=$(get_date_time "${start_line}")
+    if [[ -n "${start_date}" ]]; then
+      scheduled_date=$(date -d "${start_date}" '+%Y-%m-%d %H:%M:%S')
+      local now=$(date +%s)
+      local future=$(date -d "${start_date}" '+%s')
+
+      if [[ ${future} -gt ${now} ]]; then
+        sed -n 's#SUMMARY:#* TODO #p' "${f}"
+        echo "  SCHEDULED: <${scheduled_date}>"
+      else
+        sed -n 's#SUMMARY:#* DONE #p' "${f}"
+        echo "  COMPLETED: <${scheduled_date}>"
+      fi
+      get_description "${f}"
+    fi
+    get_recurring_events_for_the_next_month "$(cat ${f})"
   done
 
   rm ${tmp_file}

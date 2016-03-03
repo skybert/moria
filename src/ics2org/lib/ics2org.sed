@@ -4,9 +4,8 @@
   /^BEGIN:VEVENT/p
   /^END:VEVENT/p
   /^DTSTART:/p
+  /^RRULE:/p
   /^DTSTART;TZID=/p
-  # /^DTEND:/p
-  
   /^SUMMARY:/p
 
   # description can be multi line
