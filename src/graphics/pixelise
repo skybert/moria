@@ -1,0 +1,27 @@
+#! /usr/bin/env bash
+
+# by torstein.k.johansen@gmail.com
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+main() {
+  local file=$1
+
+  if [ ! -e "${file}" ]; then
+    echo "${file} doesn't exist"
+    exit 1
+  fi
+
+  local old_ifs=$IFS
+  IFS='.'
+  read base suffix <<< "${file}"
+  IFS=$old_ifs
+
+  local output_file=${base}-pixelised.${suffix}
+  convert -scale 10% -scale 1000% "${file}" "${output_file}"
+  echo "Created pixelised version of ${file} in ${output_file}"
+}
+
+main "$@"
