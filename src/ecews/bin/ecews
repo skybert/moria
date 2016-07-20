@@ -1,0 +1,75 @@
+#! /usr/bin/env bash
+
+# by torstein.k.johansen@gmail.com
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+source ~/src/moria/src/common/text/color.sh
+source ~/src/moria/src/common/indispensable.sh
+
+publication=blogs
+auth="${publication}_admin:a"
+ws_base_url=http://localhost:8080/webservice
+cook_base_url="http://localhost:8000/${publication}"
+
+show_help() {
+  print "$(basename "$0") supports these commands:"
+  declare | grep ^"do_" | cut -d' ' -f1 | cut -d'_' -f2 | sed 's#get-##g' | sort | \
+    while read f; do
+      echo "  *" "$f"
+    done
+}
+
+read_user_input() {
+  local entity_type=$1
+
+  if [[ "${entity_type}" == "--help" ]]; then
+    show_help
+    return
+  fi
+
+  local id=$2
+
+  if [[ ${entity_type} == "person" ]]; then
+    do_get-person "${id}"
+  elif [[ ${entity_type} == "content-item" ]]; then
+    do_get-content-item "${id}"
+  elif [[ ${entity_type} == "section" ]]; then
+    do_get-section "${id}"
+  elif [[ ${entity_type} == "cook" ]]; then
+    do_get-cook "${id}"
+  fi
+}
+
+do_get-cook() {
+  local uri=$1
+  cook_url="${cook_base_url}/${uri}"
+  echo "<!-- Edit query: ${cook_url}/graphql -->"
+  http ${cook_url}
+}
+
+do_get-person() {
+  local id=$1
+  local url="${ws_base_url}/escenic/person/${id}"
+  echo "<!-- URL: ${url} -->"
+  http -a ${auth} "${url}"
+}
+
+do_get-content-item() {
+  local id=$1
+  http -a ${auth} "${ws_base_url}/escenic/content/${id}"
+}
+
+do_get-section() {
+  local id=$1
+  http -a ${auth} "${ws_base_url}/escenic/section/${id}"
+}
+
+main() {
+  read_user_input "$@"
+
+}
+
+main "$@"
