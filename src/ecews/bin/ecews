@@ -10,12 +10,18 @@ source ~/src/moria/src/common/text/color.sh
 source ~/src/moria/src/common/indispensable.sh
 
 publication=blogs
-auth="${publication}_admin:a"
+password=a
+auth="${publication}_admin:${password}"
 ws_base_url=http://localhost:8080/webservice
 cook_base_url="http://localhost:8000/${publication}"
 
 show_help() {
-  print "$(basename "$0") supports these commands:"
+  cat <<EOF
+Usage: $(basename "$0") <COMMAND> <id>
+
+Where COMMAND is one of:
+EOF
+
   declare | grep ^"do_" | cut -d' ' -f1 | cut -d'_' -f2 | sed 's#get-##g' | sort | \
     while read f; do
       echo "  *" "$f"
@@ -23,14 +29,24 @@ show_help() {
 }
 
 read_user_input() {
+  for el in $*; do
+    if [[ "${el}" == "--publication" ]]; then
+      publication=$2
+      shift 2
+    elif [[ "${el}" == "--password" ]]; then
+      password=$2
+      shift 2
+    fi
+  done
+
   local entity_type=$1
+  local id=$2
 
   if [[ "${entity_type}" == "--help" ]]; then
     show_help
     return
   fi
 
-  local id=$2
 
   if [[ ${entity_type} == "person" ]]; then
     do_get-person "${id}"
@@ -40,7 +56,16 @@ read_user_input() {
     do_get-section "${id}"
   elif [[ ${entity_type} == "cook" ]]; then
     do_get-cook "${id}"
+  elif [[ ${entity_type} == "model" ]]; then
+    do_get-model "${id}"
   fi
+}
+
+do_get-model() {
+  local content_type=$1
+  local url="${ws_base_url}/escenic/publication/${publication}/model/content-type/${content_type}"
+  echo "<!-- Model URI: ${url} -->"
+  http -a "${auth}" "${url}"
 }
 
 do_get-cook() {
