@@ -40,13 +40,13 @@ read_user_input() {
   done
 
   local entity_type=$1
-  local id=$2
 
   if [[ "${entity_type}" == "--help" ]]; then
     show_help
     return
   fi
 
+  local id=$2
 
   if [[ ${entity_type} == "person" ]]; then
     do_get-person "${id}"
@@ -58,6 +58,8 @@ read_user_input() {
     do_get-cook "${id}"
   elif [[ ${entity_type} == "model" ]]; then
     do_get-model "${id}"
+  elif [[ ${entity_type} == "section-page" ]]; then
+    do_get-section-page "${id}"
   fi
 }
 
@@ -78,6 +80,13 @@ do_get-cook() {
 do_get-person() {
   local id=$1
   local url="${ws_base_url}/escenic/person/${id}"
+  echo "<!-- URL: ${url} -->"
+  http -a ${auth} "${url}"
+}
+
+do_get-section-page() {
+  local id=$1
+  local url="${ws_base_url}/escenic/section-page/${id}"
   echo "<!-- URL: ${url} -->"
   http -a ${auth} "${url}"
 }

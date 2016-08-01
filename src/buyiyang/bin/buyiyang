@@ -1,0 +1,88 @@
+#! /usr/bin/env bash
+
+# Command which lists to show what is included in a certain tag or
+# branch in Git. It integrates with Jira using the Jira REST API.
+
+# by torstein.k.johansen@gmail.com
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+source ~/src/moria/src/common/text/color.sh
+source ~/src/moria/src/common/indispensable.sh
+
+print_usage() {
+  cat <<EOF
+Usage: $(basename $0) <from> <to>
+
+<from> & <to>    Either be Git tag or branch.
+
+Lists the Jira issue keys and summaries that are included in <to> (but
+are not in <from>).
+
+The only caveat here is that <from> could of course *also* have
+commits belonging to the same issue, but this will normally not be the
+case.
+
+EOF
+}
+
+read_user_input() {
+  if [ $# -lt 2 ]; then
+    print_usage
+    exit 1
+  fi
+
+  conf_file=$HOME/.$(basename $0).conf
+
+  if [ -r "${conf_file}" ]; then
+    source "${conf_file}"
+  else
+    cat <<EOF
+$(basename $0) needs ${conf_file} with contents like:
+jira_base_url=https://example.com
+jira_user=foo
+jira_password=bar
+jira_project_key=MYPROJ
+
+git_repo_dir=$HOME/src/myproj
+EOF
+  fi
+
+  from=$1
+  to=$2
+
+}
+
+main() {
+  read_user_input "$@"
+
+  print "These issues are new in ${to} since ${from}"
+  (
+    cd "${git_repo_dir}"
+    issue_list=
+    issue_list=$(
+      git log ${from}..${to} --oneline |
+        sed -n -r "s#.*(${jira_project_key}-[0-9]+).*#\1#p" |
+        sort -u)
+    for issue in ${issue_list}; do
+      summary=
+      summary=$(
+        curl \
+          -s \
+          -u "${jira_user}:${jira_password}" \
+          ${jira_base_url}/rest/api/2/issue/${issue} |
+          jq '.fields.summary' |
+          sed 's#[\]"##g' |
+          sed 's#["]##g')
+
+      cat <<EOF
+${issue} ${summary}
+EOF
+    done
+  )
+
+}
+
+main "$@"
