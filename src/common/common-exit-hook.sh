@@ -8,7 +8,7 @@ my_exit_hook() {
   if [ ${exit_status} -eq 0 ]; then
     echo $(basename $0)  $(green SUCCESS ) ${it_took}
   else
-    echo $(basename $0)  $(red FAILED ) ${it_took}", last messages in ${log_file}:"
+    echo $(basename $0)  $(red FAILED ) ${it_took}", last messages in ${log_file} :"
     tail -20 ${log_file}
   fi
 
