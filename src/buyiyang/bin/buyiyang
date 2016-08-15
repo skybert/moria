@@ -18,12 +18,8 @@ Usage: $(basename $0) <from> <to>
 
 <from> & <to>    Either be Git tag or branch.
 
-Lists the Jira issue keys and summaries that are included in <to> (but
-are not in <from>).
-
-The only caveat here is that <from> could of course *also* have
-commits belonging to the same issue, but this will normally not be the
-case.
+Lists the Jira issue keys and summaries that are new or updated in
+<to> (since <from>).
 
 EOF
 }
@@ -35,6 +31,13 @@ read_user_input() {
   fi
 
   conf_file=$HOME/.$(basename $0).conf
+
+  for el in $*; do
+    if [[ $el == "--html" ]]; then
+      html_output=1
+      shift
+    fi
+  done
 
   if [ -r "${conf_file}" ]; then
     source "${conf_file}"
@@ -57,8 +60,14 @@ EOF
 
 main() {
   read_user_input "$@"
+  title="These issues are new or updated in ${to} (since ${from})"
 
-  print "These issues are new in ${to} since ${from}"
+  if [ ${html_output-0} -eq 1 ]; then
+      echo "<h1>${title}</h1>"
+  else
+    print "${title}"
+  fi
+
   (
     cd "${git_repo_dir}"
     issue_list=
@@ -66,6 +75,10 @@ main() {
       git log ${from}..${to} --oneline |
         sed -n -r "s#.*(${jira_project_key}-[0-9]+).*#\1#p" |
         sort -u)
+    if [ ${html_output-0} -eq 1 ]; then
+      echo "<ul>"
+    fi
+
     for issue in ${issue_list}; do
       summary=
       summary=$(
@@ -77,10 +90,27 @@ main() {
           sed 's#[\]"##g' |
           sed 's#["]##g')
 
-      cat <<EOF
+      if [ ${html_output-0} -eq 1 ]; then
+        cat <<EOF
+<li>
+  <a href="${jira_base_url}/browse/${issue}">${issue}</a>
+  ${summary}
+</li>
+
+EOF
+      else
+        cat <<EOF
 ${issue} ${summary}
 EOF
+      fi
     done
+
+    if [ ${html_output-0} -eq 1 ]; then
+      cat <<EOF
+</ul>
+<p>Generated $(date) on $(hostname)</p>
+EOF
+    fi
   )
 
 }
