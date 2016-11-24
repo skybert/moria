@@ -1,0 +1,108 @@
+#! /usr/bin/env bash
+
+# What has changed lately?
+
+# by torstein.k.johansen@gmail.com
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+source $(dirname "$0")/../common/text/color.sh
+source $(dirname "$0")/../common/indispensable.sh
+source $(dirname "$0")/../common/common-exit-hook.sh
+
+read_user_input() {
+  local OPTS=
+  OPTS=$(getopt \
+           -o hc: \
+           --long help \
+           --long conf: \
+           -n 'parse-options' \
+           -- "$@")
+  if [ $? != 0 ] ; then
+    echo "Failed parsing options." >&2
+    exit 1
+  fi
+  eval set -- "$OPTS"
+
+  while true; do
+    case "$1" in
+      -c | --conf )
+        conf_file="";
+        shift 2;;
+      -h | --help )
+        show_help_and_exit;
+        break;;
+      -- )
+        shift;
+        break ;;
+      * )
+        break ;;
+    esac
+  done
+
+  rest_of_args=$*
+}
+
+list_issues_change_since() {
+  local since=1.weeks
+  local branch=develop
+
+  mkdir -p "${src_dir}"/.
+  for git_repo in ${git_repo_list}; do
+    repo_name=$(basename "${git_repo}" .git)
+    print "Changes in ${repo_name} on the ${branch} branch since ${since}:"
+    dir=${src_dir}/${repo_name}
+    if [ -d "${dir}" ]; then
+      (
+        cd "${dir}" &&
+          git pull &> /dev/null
+      )
+    else
+      (
+        cd "${src_dir}" &&
+          git clone "${git_repo}" &> /dev/null
+      )
+    fi
+    (
+      cd "${dir}" &&
+        git checkout develop &> /dev/null &&
+        git log --merges --since=${since} --oneline |
+          sed -r -n 's#Merge pull request [#][0-9]+ in .* from (.*) to develop#\1#p' |
+          awk '{ print $2 " sha: " $1; }' |
+          sed 's#^feature/##' |
+          sed 's#^bugfix/##' |
+          sed -r "s#([A-Z]+[-][0-9]+)[-](.*)#${jira_base_url-""}/\1 \2#" |
+          sort
+    )
+
+  done
+
+}
+
+
+read_conf() {
+  source ${conf_file} || {
+    print "You must have a conf file: ${conf_file}"
+    cat <<EOF
+src_dir=\$HOME/src/palantir-src
+git_repo_list="
+  ssh://git@example.com/foo.git
+  ssh://git@example.com/bar.git
+"
+EOF
+  }
+
+}
+
+
+main() {
+  read_user_input "$@"
+  read_conf
+  days_back=7
+  list_issues_change_since "${days_back}"
+
+}
+
+main "$@"
