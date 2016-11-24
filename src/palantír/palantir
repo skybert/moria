@@ -52,7 +52,7 @@ list_issues_change_since() {
   mkdir -p "${src_dir}"/.
   for git_repo in ${git_repo_list}; do
     repo_name=$(basename "${git_repo}" .git)
-    print "Changes in ${repo_name} on the ${branch} branch since ${since}:"
+    echo "Changes in $(blue ${repo_name}) on the ${branch} branch since ${since}:"
     dir=${src_dir}/${repo_name}
     if [ -d "${dir}" ]; then
       (
