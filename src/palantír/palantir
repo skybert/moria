@@ -10,14 +10,16 @@ set -o pipefail
 
 source $(dirname "$0")/../common/text/color.sh
 source $(dirname "$0")/../common/indispensable.sh
-source $(dirname "$0")/../common/common-exit-hook.sh
+# source $(dirname "$0")/../common/common-exit-hook.sh
 
 read_user_input() {
   local OPTS=
   OPTS=$(getopt \
-           -o hc: \
-           --long help \
+           -o fhc:d: \
            --long conf: \
+           --long days-back: \
+           --long full \
+           --long help \
            -n 'parse-options' \
            -- "$@")
   if [ $? != 0 ] ; then
@@ -29,8 +31,14 @@ read_user_input() {
   while true; do
     case "$1" in
       -c | --conf )
-        conf_file="";
+        conf_file="$2";
         shift 2;;
+      -d | --days-back )
+        days_back="$2";
+        shift 2;;
+      -f | --full )
+        full_listing=1
+        break;;
       -h | --help )
         show_help_and_exit;
         break;;
@@ -46,18 +54,20 @@ read_user_input() {
 }
 
 list_issues_change_since() {
-  local since=1.weeks
+  local since=${days_back}.days
   local branch=develop
 
   mkdir -p "${src_dir}"/.
   for git_repo in ${git_repo_list}; do
     repo_name=$(basename "${git_repo}" .git)
-    echo "Changes in $(blue ${repo_name}) on the ${branch} branch since ${since}:"
+    echo "Changes in $(green "${repo_name}") on the $(blue ${branch}) branch last ${since}:"
     dir=${src_dir}/${repo_name}
     if [ -d "${dir}" ]; then
       (
         cd "${dir}" &&
-          git pull &> /dev/null
+          git pull &> /dev/null || {
+            echo "Couldn't pull $(red "${repo_name}"), using offline"
+          }
       )
     else
       (
@@ -66,15 +76,38 @@ list_issues_change_since() {
       )
     fi
     (
+      local git_log=
+
       cd "${dir}" &&
-        git checkout develop &> /dev/null &&
-        git log --merges --since=${since} --oneline |
-          sed -r -n 's#Merge pull request [#][0-9]+ in .* from (.*) to develop#\1#p' |
-          awk '{ print $2 " sha: " $1; }' |
-          sed 's#^feature/##' |
-          sed 's#^bugfix/##' |
-          sed -r "s#([A-Z]+[-][0-9]+)[-](.*)#${jira_base_url-""}/\1 \2#" |
-          sort
+        git checkout "${branch}" &> /dev/null || {
+          branch=master
+          git checkout "${branch}" &> /dev/null
+        } &&
+          git_log=$(
+            git log --pretty=format:"%s ~ %ae ~ %ai ~ %h" --no-merges --since=${since} |
+              sed  '/Automatic merge from/d' |
+              sort)
+      if [ -n "${git_log}" ]; then
+        if [ ${full_listing-0} -eq 1 ]; then
+          echo "${git_log}"
+        else
+          declare -A issue_author_map=
+
+          echo "${git_log}" | while read line; do
+            IFS='~' read -r message author date sha <<< "${line}"
+            result=""
+            if [[ ${message} =~ ^[A-Z]+-[0-9]+.* ]]; then
+              result=${jira_base_url-""}/$(
+                echo "${message}" | cut -d' ' -f1 | cut -d':' -f1)
+            else
+              result="${message}"
+            fi
+            echo "${result}"
+          done |
+            sort |
+            uniq
+        fi
+      fi
     )
 
   done
@@ -98,9 +131,10 @@ EOF
 
 
 main() {
+  days_back=7
+  touch "$HOME/.$(basename "$0").log"
   read_user_input "$@"
   read_conf
-  days_back=7
   list_issues_change_since "${days_back}"
 
 }
