@@ -3,35 +3,40 @@
 # based on this gist: https://gist.github.com/neeee/3042755
 
 function print_usage() {
-    cat <<EOF
-Usage: $(basename $0) <video.gif>
+  cat <<EOF
+Usage: $(basename "$0") <video.gif>
 EOF
 }
 
 function bootstrap_thyself() {
-    if [ $# -lt 1 ]; then
-        print_usage
-        exit 1
-    fi
+  if [ $# -lt 1 ]; then
+    print_usage
+    exit 1
+  fi
 }
 
-bootstrap_thyself $@
-
-# The -frame option gives us the window decorations too
-xwininfo=$(xwininfo -frame)
+bootstrap_thyself "$@"
 
 function get_only_the_number() {
-    echo "$xwininfo" | grep "$1" | tr -cd [:digit:]
+  # The -frame option gives us the window decorations too
+  xwininfo=$(xwininfo -frame)
+
+  echo "$xwininfo" | grep "$1" | tr -cd '[:digit:]'
 }
 
-x=$(get_only_the_number "Absolute upper-left X:")
-y=$(get_only_the_number "Absolute upper-left Y:")
-w=$(get_only_the_number "Width:")
-h=$(get_only_the_number "Height:")
 
-byzanz-record $@ \
-    -x $x \
-    -y $y \
-    -w $w \
-    -h $h
+main() {
 
+  x=$(get_only_the_number "Absolute upper-left X:")
+  y=$(get_only_the_number "Absolute upper-left Y:")
+  w=$(get_only_the_number "Width:")
+  h=$(get_only_the_number "Height:")
+
+  byzanz-record "$@" \
+                -x "$x" \
+                -y "$y" \
+                -w "$w" \
+                -h "$h"
+}
+
+main "$@"
