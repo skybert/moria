@@ -38,7 +38,7 @@ read_user_input() {
         shift 2;;
       -f | --full )
         full_listing=1
-        break;;
+        shift;;
       -h | --help )
         show_help_and_exit;
         break;;
@@ -75,6 +75,7 @@ list_issues_change_since() {
           git clone "${git_repo}" &> /dev/null
       )
     fi
+    MAX_MESSAGE_LENGTH=72
     (
       local git_log=
 
@@ -84,29 +85,27 @@ list_issues_change_since() {
           git checkout "${branch}" &> /dev/null
         } &&
           git_log=$(
-            git log --pretty=format:"%s ~ %ae ~ %ai ~ %h" --no-merges --since=${since} |
+            git log --pretty=format:"%s ~ %ae ~ %ai ~ %h" --no-merges --since="${since}" |
               sed  '/Automatic merge from/d' |
               sort)
       if [ -n "${git_log}" ]; then
-        if [ ${full_listing-0} -eq 1 ]; then
-          echo "${git_log}"
-        else
-          declare -A issue_author_map=
+        echo "${git_log}" | while read -r line; do
+          IFS='~' read -r message author date sha <<< "${line}"
+          result=""
+          if [[ ${message} =~ ^[A-Z]+-[0-9]+.* && ${full_listing-0} -eq 0 ]]; then
+            result=${jira_base_url-""}/$(
+              echo "${message}" | cut -d' ' -f1 | cut -d':' -f1)
+          else
+            result=$(get_message "${message}")
+          fi
 
-          echo "${git_log}" | while read line; do
-            IFS='~' read -r message author date sha <<< "${line}"
-            result=""
-            if [[ ${message} =~ ^[A-Z]+-[0-9]+.* ]]; then
-              result=${jira_base_url-""}/$(
-                echo "${message}" | cut -d' ' -f1 | cut -d':' -f1)
-            else
-              result="${message}"
-            fi
-            echo "${result}"
-          done |
-            sort |
-            uniq
-        fi
+          result="${result}$(yellow "${date}")$(red "${author}")"
+          if [ ${full_listing-0} -eq 1 ]; then
+            result="${result}$(blue "${sha}")"
+          fi
+          echo "${result}"
+        done |
+          sort -u -k1,1
       fi
     )
 
@@ -114,6 +113,17 @@ list_issues_change_since() {
 
 }
 
+## $1 :: message
+get_message() {
+  local message=$1
+  local result=
+  if [ ${#message} -gt ${MAX_MESSAGE_LENGTH} ]; then
+    result="${message:0:${MAX_MESSAGE_LENGTH}} (…)"
+  else
+    result="${message}"
+  fi
+  echo "${result}"
+}
 
 read_conf() {
   source ${conf_file} || {
