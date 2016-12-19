@@ -64,10 +64,10 @@ list_issues_change_since() {
     dir=${src_dir}/${repo_name}
     if [ -d "${dir}" ]; then
       (
-        cd "${dir}" &&
-          git pull &> /dev/null || {
-            echo "Couldn't pull $(red "${repo_name}"), using offline"
-          }
+        cd "${dir}" || exit 1
+        git pull &> /dev/null || {
+          echo "Couldn't pull $(red "${repo_name}"), using offline"
+        }
       )
     else
       (
