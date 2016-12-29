@@ -14,7 +14,7 @@ sherlock_strings=(
 
 main() {
   for sherlock_string in "${sherlock_strings[@]}"; do
-    grep -w "${sherlock_string}" "$@"
+    grep -w "${sherlock_string}" "$@" || true
   done
 }
 
