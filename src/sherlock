@@ -1,0 +1,21 @@
+#! /usr/bin/env bash
+
+# by torstein@escenic.com
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+sherlock_strings=(
+  "command not found"
+  "unbound variable"
+)
+
+
+main() {
+  for sherlock_string in "${sherlock_strings[@]}"; do
+    grep -w "${sherlock_string}" "$@"
+  done
+}
+
+main "$@"
