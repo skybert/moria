@@ -15,9 +15,10 @@ source $(dirname "$0")/../common/indispensable.sh
 read_user_input() {
   local OPTS=
   OPTS=$(getopt \
-           -o fhc:d: \
+           -o fhc:d:o: \
            --long conf: \
            --long days-back: \
+           --long format: \
            --long full \
            --long help \
            -n 'parse-options' \
@@ -32,6 +33,9 @@ read_user_input() {
     case "$1" in
       -c | --conf )
         conf_file="$2";
+        shift 2;;
+      -o | --format )
+        output_format="$2";
         shift 2;;
       -d | --days-back )
         days_back="$2";
