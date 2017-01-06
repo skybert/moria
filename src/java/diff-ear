@@ -1,0 +1,79 @@
+#! /usr/bin/env bash
+
+## Command which does sensible diffing of two EAR files.
+##
+## by torstein
+shopt -s nullglob
+
+function bootstrap_thyself() {
+  local required_command_list="unzip"
+  for el in $required_command_list; do
+    which $el &>/dev/null || {
+      echo "You must have $el installed"
+      exit 1
+    }
+  done
+}
+
+extract_ear_in_dir() {
+  local ear=$1
+  local dir=$2
+
+  unzip -q "${ear}" -d "${dir}"
+  for war in "${dir}/"*.war; do
+    local war_dir=
+    war_dir="${dir}/$(basename "${war}" .war)"
+    mkdir "${war_dir}"
+    unzip -q "${war}" -d "${war_dir}"
+    rm "${war}"
+  done
+}
+
+function main() {
+  local from_tmp=
+  from_tmp=$(mktemp -d)
+  local to_tmp=
+  to_tmp=$(mktemp -d)
+
+  extract_ear_in_dir "${from_ear}" "${from_tmp}"
+  extract_ear_in_dir "${to_ear}" "${to_tmp}"
+
+  diff -r "${from_tmp}" "${to_tmp}" |
+    sed 's#Only in ##g' |
+    sed "s#${from_tmp}/#${from_ear}:#g" |
+    sed "s#${to_tmp}/#${to_ear}:#g" |
+    sort -k 2,2
+
+  rm -rf "${to_tmp}"
+  rm -rf "${from_tmp}"
+}
+
+function print_usage() {
+  cat <<EOF
+Usage: ${BASH_SOURCE[0]} OPTIONS <one-ear> <another-ear>
+
+OPTOINS
+--help         Prints this help screen.
+EOF
+}
+
+function read_user_input() {
+  for el in "$@"; do
+    if [[ $el == "--help" ]]; then
+      print_usage
+      exit 0
+    fi
+  done
+
+  if [ $# -lt 2 ]; then
+    print_usage
+    exit 1
+  fi
+
+  from_ear=$1
+  to_ear=$2
+}
+
+bootstrap_thyself
+read_user_input "$@"
+main
