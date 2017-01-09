@@ -52,7 +52,7 @@ function print_usage() {
   cat <<EOF
 Usage: ${BASH_SOURCE[0]} OPTIONS <one-ear> <another-ear>
 
-OPTOINS
+OPTIONS
 --help         Prints this help screen.
 EOF
 }
