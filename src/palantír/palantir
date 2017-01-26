@@ -57,6 +57,21 @@ read_user_input() {
   rest_of_args=$*
 }
 
+show_help_and_exit() {
+  cat <<EOF
+Usage: ${BASH_SOURCE[0]} OPTIONS
+
+OPTIONS
+
+-h, --help       Don't panic.
+-f, --full       Detailed output
+-d, --days-back  Number of days back
+EOF
+
+  exit 0
+}
+
+
 list_issues_change_since() {
   local since=${days_back}.days
   local branch=develop
