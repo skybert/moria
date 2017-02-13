@@ -1,0 +1,193 @@
+#! /usr/bin/env bash
+
+number_of_errors=0
+number_of_tests=0
+
+check_list_of_urls_that_should_return_200() {
+  for el in "${url_list_200_ok_and_xml[@]}"; do
+    local uri_fragment=${el##http://${host_and_port}}
+
+    if [ "${verbose-0}" -eq 1 ]; then
+      echo "Verifying 200 OK and well formed XML: ${uri_fragment} ..."
+    else
+      echo -n "."
+    fi
+
+    curl -s -I -u "${http_auth}" "${el}" | grep --quiet "^HTTP/1.1 200 OK"
+    if [ $? -ne 0 ]; then
+      flag_error "${uri_fragment} did NOT return 200 OK"
+      continue
+    fi
+
+    curl -s -u "${http_auth}" "${el}" | xmllint --format - > /dev/null || {
+      flag_error "${uri_fragment} isn't well formed XML"
+    }
+  done
+}
+
+check_list_of_urls_that_should_return_vdf() {
+  for el in "${url_list_vdf[@]}"; do
+    local uri_fragment=${el##http://${host_and_port}}
+
+    if [ "${verbose-0}" -eq 1 ]; then
+      echo "Verifying VDF: ${uri_fragment} ..."
+    else
+      echo -n "."
+    fi
+
+    curl -I -s -u "${http_auth}" "${el}" |
+      grep --quiet -i "^Content-Type: application/vnd.vizrt.model+xml"
+    if [ $? -ne 0 ]; then
+      flag_error "${uri_fragment} did NOT return VDF"
+    fi
+  done
+}
+
+flag_error() {
+  echo -n "E"
+  if [ -n "${errors}" ]; then
+    errors="${errors}
+   ☠ $*"
+  else
+    errors="   ☠ $*"
+  fi
+
+  ((number_of_errors++))
+}
+
+check_language_state_translation() {
+  local language_name=$1
+  local string_to_test_for=$2
+  local locales=$3
+
+  for el in "${url_list_language[@]}"; do
+    local uri_fragment=${el##http://${host_and_port}}
+
+    if [ "${verbose-0}" -eq 1 ]; then
+      echo "Verifying ${language_name} language: ${uri_fragment} ..."
+    else
+      echo -n "."
+    fi
+
+    local count=
+
+    for locale in ${locales}; do
+      count=$(
+        curl -s -u "${http_auth}" \
+             --header "Accept-Language: ${locale}" \
+             "${el}" |
+          xmllint --format - |
+          grep -c -w "${string_to_test_for}")
+      if [ "${count}" -lt 1 ]; then
+        flag_error "${uri_fragment}" "did not have a ${language_name} version for locale ${locale}"
+      fi
+    done
+  done
+}
+
+check_norwegian_state_translation() {
+  check_language_state_translation "Norwegian" "Publisert" "no nb"
+}
+
+check_swedish_state_translation() {
+  check_language_state_translation "Swedish" "Publicerad" "sv"
+}
+
+check_german_state_translation() {
+  check_language_state_translation "German" "Publiziert" "de"
+}
+
+print_report() {
+  if [ -n "${errors}" ]; then
+    echo "${errors}"
+  fi
+
+  echo "Tests run:" \
+       "$(blue $((number_of_tests)));" \
+       "success: $(green $((number_of_tests - number_of_errors)));" \
+       "error: $(red ${number_of_errors});"
+}
+
+bootstrap_thyself() {
+  source $(dirname "$0")/../common/text/color.sh || {
+    echo "I need my colours, even with a 'u'"
+    exit 1
+  }
+}
+
+
+
+main() {
+  bootstrap_thyself
+
+  # create_conf
+  local file=
+  file="$HOME/.$(basename "$0").conf"
+  declare -A ece_instance_host_port_and_http_auth_map
+  declare -A ece_instance_host_port_and_publication_map
+  declare -A ece_instance_host_port_and_content_type_map
+
+  source -- "${file}" || {
+    cat <<EOF
+You need a ${file} like this:
+
+ece_instance_host_port_and_http_auth_map=(
+  ["app1:8080"]="john:foo"
+  ["uat2:8080"]="lisa:foo"
+  ["localhost:8080"]="mypub_admin:baz"
+)
+
+ece_instance_host_port_and_publication_map=(
+  ["app1:8080"]="demopub"
+  ["uat2:8080"]="demopub"
+  ["localhost:8080"]="mypub"
+)
+
+ece_instance_host_port_and_publication_map=(
+  ["app1:8080"]="story"
+  ["uat2:8080"]="story"
+  ["localhost:8080"]="news"
+)
+EOF
+    exit 1
+  }
+
+  for el in "${!ece_instance_host_port_and_http_auth_map[@]}"; do
+    host_and_port="${el}"
+    http_auth="${ece_instance_host_port_and_http_auth_map[${el}]}"
+    publication="${ece_instance_host_port_and_publication_map[${el}]}"
+    content_type="${ece_instance_host_port_and_content_type_map[${el}]}"
+
+    echo -n  "Verifying that $(green "${host_and_port}") is OK: "
+
+    declare -a url_list_200_ok_and_xml=(
+      http://${host_and_port}/webservice/index.xml
+      http://${host_and_port}/webservice/escenic/publication/${publication}/model/content-type/${content_type}
+    )
+
+    declare -a url_list_vdf=(
+      http://${host_and_port}/webservice/escenic/publication/${publication}/model/content-type/${content_type}
+    )
+
+    declare -a url_list_language=(
+      http://${host_and_port}/webservice/escenic/pool/state/published/editor
+      http://${host_and_port}/webservice/escenic/content/state/published/editor
+    )
+
+    for check_method in $(declare -f | grep ^check_ | awk '{print $1}'); do
+      ((number_of_tests++))
+      ${check_method}
+    done
+
+    echo ""
+
+    print_report
+    number_of_errors=0
+    number_of_tests=0
+    errors=""
+  done
+
+  exit 0
+}
+
+main "$*"
