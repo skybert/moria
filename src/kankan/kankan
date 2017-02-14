@@ -47,9 +47,9 @@ flag_error() {
   echo -n "E"
   if [ -n "${errors}" ]; then
     errors="${errors}
-   ☠ $*"
+   ☠ ${FUNCNAME[1]} $*"
   else
-    errors="   ☠ $*"
+    errors="   ☠ ${FUNCNAME[1]} $*"
   fi
 
   ((number_of_errors++))
@@ -173,6 +173,8 @@ EOF
       http://${host_and_port}/webservice/escenic/pool/state/published/editor
       http://${host_and_port}/webservice/escenic/content/state/published/editor
     )
+
+    source "$(dirname "$0")/checks/"*.sh || exit 1
 
     for check_method in $(declare -f | grep ^check_ | awk '{print $1}'); do
       ((number_of_tests++))
