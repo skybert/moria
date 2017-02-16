@@ -24,7 +24,6 @@ init_check_ece_instances() {
     )
 
     url_list_language=(
-      http://"${http_auth}"@${host_and_port}/webservice/escenic/pool/state/published/editor
       http://"${http_auth}"@${host_and_port}/webservice/escenic/content/state/published/editor
       ${url_list_language[@]}
     )
@@ -40,19 +39,18 @@ check_that_search_is_working() {
     local http_auth="${ece_instance_host_port_and_http_auth_map[${el}]}"
 
     local uri="http://${host_and_port}/webservice/search/*/"
-    local -i some_total_results=0
-    some_total_results=$(
+    local -i total_results=0
+    total_results=$(
       curl -s  -u "${http_auth}" "${uri}"  |
         grep totalResults |
         tail -n 1 |
         sed -n -r 's#.*totalResults="([^"]*)".*#\1#p')
-    if [ "${some_total_results}" -gt 0 ]; then
+    if [ "${total_results}" -gt 0 ]; then
       echo -n "."
     else
       flag_error "Searching isn't working using ${uri}"
     fi
   done
-
 }
 
 _check_language_state_translation() {

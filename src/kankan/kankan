@@ -83,9 +83,11 @@ main() {
     exit 1
   }
 
-  source "$(dirname "$0")/checks/"*.sh || exit 1
+  for f in "$(dirname "$0")/checks/"*.sh; do
+    source "${f}" || exit 1
+  done
 
-  for check_method in $(declare -f | grep ^check_ | awk '{print $1}'); do
+  for check_method in $(declare -f | grep ^check_ | awk '{print $1}' | sort); do
     ${check_method}
   done
   print_report
