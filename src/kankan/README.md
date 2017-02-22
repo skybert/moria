@@ -60,3 +60,5 @@ href="checks/check-ece-instances.sh">checks/check-ece-instances.sh</a>
 for a more advanced example, executing the same tests against multiple
 machines.
 
+# What's in a name
+`kankan` is Chinese for `look`, or `check` (it out).
