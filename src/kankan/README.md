@@ -54,7 +54,7 @@ Tests run: 58; success: 50; error: 8;
 Create a new `check-` file in the `checks` directory. All methods
 starting with `check_` will be included in the test suite.
 
-See <a href="checks/check-network.sh">checks/check-network.sh"</a> for
+See <a href="checks/check-network.sh">checks/check-network.sh</a> for
 a simple check and <a
 href="checks/check-ece-instances.sh">checks/check-ece-instances.sh</a>
 for a more advanced example, executing the same tests against multiple
