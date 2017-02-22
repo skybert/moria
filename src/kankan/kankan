@@ -88,7 +88,9 @@ main() {
   done
 
   for check_method in $(declare -f | grep ^check_ | awk '{print $1}' | sort); do
+    ((number_of_tests++))
     ${check_method}
+    echo -n "."
   done
   print_report
 }
