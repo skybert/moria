@@ -41,11 +41,11 @@ E..E......................E.E...E.E.............E..E..............
    ☠ _check_section_page_state_translation http://orange.example.com:8080/webservice/escenic/pool/state/published/editor did not have a German version for locale de
    ☠ _check_section_page_state_translation http://orange.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Norwegian version for locale nb
    ☠ _check_section_page_state_translation http://orange.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Norwegian version for locale no
-   ☠ _check_section_page_state_translation http://erd-banana.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Swedish version for locale sv
+   ☠ _check_section_page_state_translation http://orange.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Swedish version for locale sv
    ☠ _check_section_page_state_translation http://apple.example.com:8080/webservice/escenic/pool/state/published/editor did not have a German version for locale de
    ☠ _check_section_page_state_translation http://apple.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Norwegian version for locale nb
-   ☠ _check_section_page_state_translation http://flowerhatece.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Norwegian version for locale no
-   ☠ _check_section_page_state_translation http://flowerhatece.poc.ccieurope.com:8080/webservice/escenic/pool/state/published/editor did not have a Swedish version for locale sv
+   ☠ _check_section_page_state_translation http://apple.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Norwegian version for locale no
+   ☠ _check_section_page_state_translation http://apple.example.com:8080/webservice/escenic/pool/state/published/editor did not have a Swedish version for locale sv
 Tests run: 58; success: 50; error: 8;
 ```
 
