@@ -4,6 +4,55 @@ declare -a url_list_200_ok_and_xml=()
 number_of_errors=0
 number_of_tests=0
 
+show_help_and_exit() {
+  cat <<EOF
+Usage: ${0##*/} OPTIONS
+
+OPTIONS
+-p, --print-positives
+-v, --verbose
+-h, --help
+EOF
+  exit 0
+}
+
+read_user_input() {
+  local OPTS=
+  OPTS=$(getopt \
+           -o hvp \
+           --long verbose: \
+           --long print-positives: \
+           --long help \
+           -n 'parse-options' \
+           -- "$@")
+  if [ $? != 0 ] ; then
+    echo "Failed parsing options." >&2
+    exit 1
+  fi
+  eval set -- "$OPTS"
+
+  while true; do
+    case "$1" in
+      -h | --help )
+        show_help_and_exit;
+        break;;
+      -v | --verbose )
+        verbose=1;
+        break;;
+      -p | --print-positives )
+        print_positives=1;
+        break;;
+      -- )
+        shift;
+        break ;;
+      * )
+        break ;;
+    esac
+  done
+
+  rest_of_args=$*
+}
+
 flag_error() {
   echo -n "E"
 
@@ -26,6 +75,14 @@ print_report() {
     echo -e "\n${errors}" | sort
   else
     echo ""
+  fi
+
+  if [ "${print_positives-0}" -eq 1 ]; then
+    printf "\n%s\n" "Checks executed:"
+    printf "%s\n" "${checks_executed[@]}" |
+      sort |
+      sed 's#^check_#  - #'
+    printf "\n"
   fi
 
   echo "Tests run:" \
@@ -73,6 +130,7 @@ check_list_of_urls_that_should_return_200() {
 
 main() {
   bootstrap_thyself
+  read_user_input "$@"
 
   # create_conf
   local file=
@@ -83,14 +141,21 @@ main() {
     exit 1
   }
 
+
   for f in "$(dirname "$0")/checks/"*.sh; do
     source "${f}" || exit 1
   done
+
+  local -a checks_executed=()
 
   for check_method in $(declare -f | grep ^check_ | awk '{print $1}' | sort); do
     ((number_of_tests++))
     ${check_method}
     echo -n "."
+    checks_executed=(
+      "${check_method}"
+      "${checks_executed[@]}"
+    )
   done
   print_report
 }
