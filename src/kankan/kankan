@@ -77,6 +77,11 @@ print_report() {
     echo ""
   fi
 
+  echo "Tests run:" \
+       "$(blue $((number_of_tests)));" \
+       "success: $(green $((number_of_tests - number_of_errors)));" \
+       "error: $(red ${number_of_errors});"
+
   if [ "${print_checks-0}" -eq 1 ]; then
     printf "\n%s\n" "Checks executed:"
     printf "%s\n" "${checks_executed[@]}" |
@@ -86,10 +91,6 @@ print_report() {
     printf "\n"
   fi
 
-  echo "Tests run:" \
-       "$(blue $((number_of_tests)));" \
-       "success: $(green $((number_of_tests - number_of_errors)));" \
-       "error: $(red ${number_of_errors});"
 }
 
 bootstrap_thyself() {
