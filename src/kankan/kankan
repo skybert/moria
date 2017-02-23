@@ -80,8 +80,9 @@ print_report() {
   if [ "${print_checks-0}" -eq 1 ]; then
     printf "\n%s\n" "Checks executed:"
     printf "%s\n" "${checks_executed[@]}" |
-      sort |
-      sed 's#^check_#  - #'
+      sed 's#^check_that_#  - #' |
+      sed 's#^check_#  - #' |
+      sort
     printf "\n"
   fi
 
