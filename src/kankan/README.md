@@ -24,30 +24,26 @@ OPTIONS
 ```bash
 # -*- mode: sh; sh-shell: bash; -*-
 
-declare -Ax ece_instance_host_port_and_http_auth_map=
-declare -Ax ece_instance_host_port_and_publication_map=
-declare -Ax ece_instance_host_port_and_content_type_map=
-
 declare -ax url_ok_list=(
   "http://gnu.org"
   "http://skybert.net"
 )
 
-ece_instance_host_port_and_http_auth_map=(
+declare -Ax ece_instance_host_port_and_http_auth_map=(
   ["banana.example.com"]="foo:bar"
   ["apple.example.com:8080"]="foo:bar"
   ["orange.example.com:8080"]="foo:bar"
   ["localhost:8080"]="mypub_admin:baz"
 )
 
-ece_instance_host_port_and_publication_map=(
+declare -Ax ece_instance_host_port_and_publication_map=(
   ["apple.example.com:8080"]="demopub"
   ["orange.example.com:8080"]="demopub"
   ["localhost:8080"]="mypub"
   ["banana.example.com"]="dev.banana"
 )
 
-ece_instance_host_port_and_content_type_map=(
+declare -Ax ece_instance_host_port_and_content_type_map=(
   ["apple.example.com:8080"]="story"
   ["orange.example.com:8080"]="story"
   ["localhost:8080"]="story"
