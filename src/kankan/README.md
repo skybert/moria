@@ -3,6 +3,22 @@
 
 Write simple BASH scripts for creating integration tests.
 
+```
+$ kankan --help
+Usage: kankan OPTIONS
+
+Easy integration tests for UNIX folks.
+
+Reports of each run is stored in /home/torstein/.kankan These can be turned
+off with --disable-logs.
+
+OPTIONS
+-p, --print-checks  List all the checks kankan has run
+-v, --verbose       Be verbose
+-d, --disable-logs  Don't create log files for each run
+-h, --help          This screen.
+```
+
 ## Configuration in ~/.kankan.conf
 
 ```bash
