@@ -29,10 +29,12 @@ show_help_and_exit() {
   cat <<EOF
 Usage: ${0##*/} OPTIONS
 
+Easy integration tests for UNIX folks.
+
 OPTIONS
--p, --print-checks
--v, --verbose
--h, --help
+-p, --print-checks List all the checks ${0##*/} has run
+-v, --verbose      Be verbose
+-h, --help         This screen.
 EOF
   exit 0
 }
