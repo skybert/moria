@@ -131,7 +131,7 @@ bootstrap_thyself() {
   }
 }
 
-check_list_of_urls_that_should_return_200() {
+check_list_of_urls_that_should_return_200_and_be_well_formed_xml() {
   if [ "${has_initialised_ece_instance_check}" -eq 0 ]; then
     init_check_ece_instances
   fi
