@@ -28,6 +28,11 @@ declare -Ax ece_instance_host_port_and_http_auth_map=
 declare -Ax ece_instance_host_port_and_publication_map=
 declare -Ax ece_instance_host_port_and_content_type_map=
 
+declare -ax url_ok_list=(
+  "http://gnu.org"
+  "http://skybert.net"
+)
+
 ece_instance_host_port_and_http_auth_map=(
   ["banana.example.com"]="foo:bar"
   ["apple.example.com:8080"]="foo:bar"
