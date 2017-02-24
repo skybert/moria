@@ -31,10 +31,14 @@ Usage: ${0##*/} OPTIONS
 
 Easy integration tests for UNIX folks.
 
+Reports of each run is stored in $HOME/.${0##*/} These can be turned
+off with --disable-logs.
+
 OPTIONS
--p, --print-checks List all the checks ${0##*/} has run
--v, --verbose      Be verbose
--h, --help         This screen.
+-p, --print-checks  List all the checks ${0##*/} has run
+-v, --verbose       Be verbose
+-d, --disable-logs  Don't create log files for each run
+-h, --help          This screen.
 EOF
   exit 0
 }
@@ -42,9 +46,10 @@ EOF
 read_user_input() {
   local OPTS=
   OPTS=$(getopt \
-           -o hvp \
+           -o hvpd \
            --long verbose \
            --long print-checks \
+           --long disable-logs \
            --long help \
            -n 'parse-options' \
            -- "$@")
@@ -58,6 +63,9 @@ read_user_input() {
     case "$1" in
       -h | --help )
         show_help_and_exit;
+        break;;
+      -d | --disable-logs )
+        disable_log_files=1
         break;;
       -v | --verbose )
         verbose=1;
@@ -183,7 +191,14 @@ main() {
       "${checks_executed[@]}"
     )
   done
-  print_report
+
+  if [ ${disable_log_files-0} -eq 0 ]; then
+    mkdir -p "${HOME}/.kankan"
+    print_report |
+      tee "$HOME/.kankan/$(date --iso)-$(date +%s)-results.txt"
+  else
+    print_report
+  fi
 }
 
 main "$*"
