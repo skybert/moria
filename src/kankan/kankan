@@ -4,6 +4,27 @@ declare -a url_list_200_ok_and_xml=()
 number_of_errors=0
 number_of_tests=0
 
+declare -a required_commands=(
+  curl
+  xmllint
+  sed
+)
+
+ensure_sanity() {
+  local errors_detected=0
+  for required_command in "${required_commands[@]}"; do
+    which "${required_command}" &> /dev/null || {
+      printf "%s\n" "${0##*/} needs the command ${required_command} 💀"
+      errors_detected=1
+    }
+  done
+
+  if [ "${errors_detected}" -eq 1 ]; then
+    exit 1
+  fi
+
+}
+
 show_help_and_exit() {
   cat <<EOF
 Usage: ${0##*/} OPTIONS
@@ -131,6 +152,7 @@ check_list_of_urls_that_should_return_200() {
 }
 
 main() {
+  ensure_sanity
   bootstrap_thyself
   read_user_input "$@"
 
