@@ -49,6 +49,10 @@ declare -Ax ece_instance_host_port_and_content_type_map=(
   ["localhost:8080"]="story"
   ["banana.example.com"]="story"
 )
+
+declare -ax exclude_check_list=(
+  checks/check-that-doesnt-apply-to-me.sh
+)
 ```
 
 # Example output

@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
 declare -a url_list_200_ok_and_xml=()
+declare -a exclude_check_list=()
 number_of_errors=0
 number_of_tests=0
 
@@ -132,7 +133,7 @@ bootstrap_thyself() {
 }
 
 check_list_of_urls_that_should_return_200_and_be_well_formed_xml() {
-  if [ "${has_initialised_ece_instance_check}" -eq 0 ]; then
+  if [ "${has_initialised_ece_instance_check-0}" -eq 0 ]; then
     init_check_ece_instances
   fi
 
@@ -177,6 +178,17 @@ main() {
 
 
   for f in "$(dirname "$0")/checks/"*.sh; do
+    local exclude_check=0
+
+    for el in "${exclude_check_list[@]}"; do
+      if [[ "${f}" == *"${el}"* ]]; then
+        exclude_check=1
+        continue
+      fi
+    done
+    if [ "${exclude_check}" -eq 1 ]; then
+      continue
+    fi
     source "${f}" || exit 1
   done
 
@@ -195,7 +207,7 @@ main() {
   if [ ${disable_log_files-0} -eq 0 ]; then
     mkdir -p "${HOME}/.kankan"
     print_report |
-      tee "$HOME/.kankan/$(date --iso)-$(date +%s)-results.txt"
+      tee "$HOME/.kankan/$(date --iso)-$(date +%s)-results.log"
   else
     print_report
   fi
