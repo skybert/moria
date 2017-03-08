@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+## Easy integration tests for the command line
+##
+## by @torsteinkrause
+
 declare -a url_list_200_ok_and_xml=()
 declare -a exclude_check_list=()
 number_of_errors=0
@@ -30,7 +34,7 @@ show_help_and_exit() {
   cat <<EOF
 Usage: ${0##*/} OPTIONS
 
-Easy integration tests for UNIX folks.
+Easy integration tests for the command line.
 
 Reports of each run is stored in $HOME/.${0##*/} These can be turned
 off with --disable-logs.
