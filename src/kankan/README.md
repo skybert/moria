@@ -1,5 +1,5 @@
 
-## kankan - Easy integration tests for UNIX folks
+## kankan - Easy integration tests
 
 Write simple BASH scripts for creating integration tests.
 
@@ -7,7 +7,7 @@ Write simple BASH scripts for creating integration tests.
 $ kankan --help
 Usage: kankan OPTIONS
 
-Easy integration tests for UNIX folks.
+Easy integration tests for the command line.
 
 Reports of each run is stored in /home/torstein/.kankan These can be turned
 off with --disable-logs.
