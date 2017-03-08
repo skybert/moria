@@ -14,7 +14,9 @@ check_ece_install_have_installed_files() {
     /etc/init.d/solr
     /opt/solr
     /opt/tomcat-engine1
+    /opt/tomcat-engine1/escenic/lib
     /opt/tomcat-search1
+    /opt/tomcat-search1/escenic/lib
     /var/cache/escenic
     /var/lib/escenic
     /var/lib/escenic/solr/editorial/core.properties
