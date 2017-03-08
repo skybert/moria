@@ -110,9 +110,10 @@ print_report() {
   fi
 
   echo "Tests run:" \
-       "$(blue $((number_of_tests)));" \
-       "success: $(green $((number_of_tests - number_of_errors)));" \
-       "error: $(red ${number_of_errors});"
+       "$(blue $((number_of_tests)))," \
+       "Successes: $(green $((number_of_tests - number_of_errors)))," \
+       "Failures: $(red ${number_of_errors})," \
+       "Time elapsed: $(($(date +%s) - checks_started)) seconds"
 
   if [ "${print_checks-0}" -eq 1 ]; then
     printf "\n%s\n" "Checks executed:"
@@ -194,6 +195,7 @@ main() {
 
   local -a checks_executed=()
 
+  checks_started=$(date +%s)
   for check_method in $(declare -f | grep ^check_ | awk '{print $1}' | sort); do
     ((number_of_tests++))
     ${check_method}
