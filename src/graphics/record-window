@@ -33,6 +33,8 @@ main() {
   h=$(get_only_the_number "Height:")
 
   byzanz-record "$@" \
+                -c \
+                -d "${duration-60}" \
                 -x "$x" \
                 -y "$y" \
                 -w "$w" \
