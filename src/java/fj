@@ -11,15 +11,17 @@ _query=
 _find_jars_in_dir() {
   local dir=$1
 
-  local domain=${_query%%/*}
-  if [ -d "${dir}/${domain}" ]; then
-    local company=${_query#${domain}/}
-    company=${company%%/*}
+  if [ ${_fast-0} -eq 1 ]; then
+    local domain=${_query%%/*}
+    if [ -d "${dir}/${domain}" ]; then
+      local company=${_query#${domain}/}
+      company=${company%%/*}
 
-    if [ -d "${dir}/${domain}/${company}" ]; then
-      dir=${dir}/${domain}/${company}
-    else
-      dir=${dir}/${domain}
+      if [ -d "${dir}/${domain}/${company}" ]; then
+        dir=${dir}/${domain}/${company}
+      else
+        dir=${dir}/${domain}
+      fi
     fi
   fi
 
