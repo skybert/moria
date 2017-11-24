@@ -10,13 +10,29 @@ _query=
 ## $1 :: dir
 _find_jars_in_dir() {
   local dir=$1
+
+  local domain=${_query%%/*}
+  if [ -d "${dir}/${domain}" ]; then
+    local company=${_query#${domain}/}
+    company=${company%%/*}
+
+    if [ -d "${dir}/${domain}/${company}" ]; then
+      dir=${dir}/${domain}/${company}
+    else
+      dir=${dir}/${domain}
+    fi
+  fi
+
+  printf "Searching for JARs in %s\n" "${dir}"
+
   if [ -d "${dir}" ]; then
     local result=
     result=$(
-      grep -l \
+      grep --files-with-matches \
            --ignore-case \
            --recursive \
            --include "*.jar" \
+           --fixed-strings \
            "${_query}" \
            "${dir}" |
         egrep -v '(sources|javadoc).jar')
@@ -36,7 +52,8 @@ _find_jars_in_dir() {
 
 
 _find_jars_in_maven_repo() {
-  _find_jars_in_dir "${HOME}/.m2/repository/com/google"
+  local dir="${HOME}/.m2/repository"
+  _find_jars_in_dir "${dir}"
 }
 
 _find_jars_in_tomcat() {
