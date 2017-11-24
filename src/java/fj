@@ -1,0 +1,69 @@
+#! /usr/bin/env bash
+
+## fj - find jar, trying to be smart
+##
+## by torstein at skybert dot net
+
+_verbose=1
+_query=
+
+## $1 :: dir
+_find_jars_in_dir() {
+  local dir=$1
+  if [ -d "${dir}" ]; then
+    local result=
+    result=$(
+      grep -l \
+           --ignore-case \
+           --recursive \
+           --include "*.jar" \
+           "${_query}" \
+           "${dir}" |
+        egrep -v '(sources|javadoc).jar')
+
+    if [[ -n "${result}" && "${_verbose-0}" -eq 1 ]]; then
+      printf "%s\n" "${result}" |
+        while read -r f; do
+          printf "%s \n" "${f}"
+          unzip -v "${f}" |
+            grep --fixed-strings --ignore-case "${_query}" |
+            awk '{print "   → " $8;}' |
+            grep --fixed-strings --ignore-case --color "${_query}"
+        done
+    fi
+  fi
+}
+
+
+_find_jars_in_maven_repo() {
+  _find_jars_in_dir "${HOME}/.m2/repository/com/google"
+}
+
+_find_jars_in_tomcat() {
+  _find_jars_in_dir /opt/tomcat-engine1
+}
+
+_find_jars_in_cwd() {
+  :
+}
+
+_ensure_sanity() {
+  :
+}
+
+_make_sense_of_query() {
+  :
+}
+
+main() {
+  _query=$1
+  _ensure_sanity
+  _make_sense_of_query
+  _find_jars_in_maven_repo
+  printf "\n"
+  _find_jars_in_tomcat
+  printf "\n"
+  _find_jars_in_cwd
+}
+
+main "$*"
