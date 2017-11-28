@@ -9,11 +9,20 @@ _query=
 
 _show_help_and_exit() {
   cat <<EOF
-Usage: ${BASH_SOURCE[0]} [OPTIONS]
+Usage: ${BASH_SOURCE[0]} [OPTIONS] <QUERY>
+
+QUERY
+  Full class JAR reference
+  com/google/common/collect/UnmodifiableIterator or just the class
+  name UnmodifiableIterator
 
 OPTIONS
-  -h, --help   Don't panic.
+  -d, --dir <dir>   Directory to search for JARs
+  -v, --verbose     I want it all and I want it now.
+  -h, --help        Don't panic.
 EOF
+
+  exit 0
 }
 
 _read_user_input() {
@@ -71,7 +80,9 @@ _find_jars_in_dir() {
     fi
   fi
 
-  printf "Searching for JARs in %s\n" "${dir}"
+  if [ "${_verbose-0}" -eq 1 ]; then
+    printf "Searching for JARs in %s\n" "${dir}"
+  fi
 
   if [ -d "${dir}" ]; then
     local result=
@@ -94,6 +105,8 @@ _find_jars_in_dir() {
             awk '{print "   → " $8;}' |
             grep --fixed-strings --ignore-case --color "${_query}"
         done
+    else
+      printf "%s\n" "${result}"
     fi
   fi
 }
