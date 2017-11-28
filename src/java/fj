@@ -4,10 +4,56 @@
 ##
 ## by torstein at skybert dot net
 
-_verbose=1
+_verbose=0
 _query=
 
-## $1 :: dir
+_show_help_and_exit() {
+  cat <<EOF
+Usage: ${BASH_SOURCE[0]} [OPTIONS]
+
+OPTIONS
+  -h, --help   Don't panic.
+EOF
+}
+
+_read_user_input() {
+  local OPTS=
+  OPTS=$(getopt \
+           -o hvd: \
+           --long help \
+           --long verbose \
+           --long dir \
+           -n 'parse-options' \
+           -- "$@")
+  if [ $? != 0 ] ; then
+    echo "Failed parsing options." >&2
+    exit 1
+  fi
+  eval set -- "$OPTS"
+
+  while true; do
+    case "$1" in
+      -h | --help )
+        _show_help_and_exit;
+        break;;
+      -v | --verbose )
+        _verbose=1
+        shift;;
+      -d | --dir )
+        _mvn_repo_dir=$2
+        shift 2;;
+      -- )
+        shift;
+        break ;;
+      * )
+        break ;;
+    esac
+  done
+
+  _rest_of_args=$*
+}
+
+# $1 :: dir
 _find_jars_in_dir() {
   local dir=$1
 
@@ -54,7 +100,7 @@ _find_jars_in_dir() {
 
 
 _find_jars_in_maven_repo() {
-  local dir="${HOME}/.m2/repository"
+  local dir=${_mvn_repo_dir-"${HOME}/.m2/repository"}
   _find_jars_in_dir "${dir}"
 }
 
@@ -75,7 +121,8 @@ _make_sense_of_query() {
 }
 
 main() {
-  _query=$1
+  _read_user_input "$@"
+  _query=${_rest_of_args}
   _ensure_sanity
   _make_sense_of_query
   _find_jars_in_maven_repo
@@ -85,4 +132,4 @@ main() {
   _find_jars_in_cwd
 }
 
-main "$*"
+main "$@"
