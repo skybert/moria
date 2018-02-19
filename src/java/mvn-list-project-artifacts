@@ -1,0 +1,48 @@
+#! /usr/bin/env bash
+
+# by torstein@escenic.com
+
+set -o nounset
+set -o pipefail
+
+source "$(dirname "$0")"/../common/text/color.sh
+
+main() {
+  dir=${1-$(pwd)}
+
+  find "${dir}" -name pom.xml |
+    while read -r f; do
+      xml=$(sed 's#xmlns=".*"##' "${f}")
+
+      artifact_id=$(_lookup_xpath "${xml}" '/project/artifactId/text()')
+
+      group_id=$(_lookup_xpath "${xml}" '/project/groupId/text()')
+      if [ -z "${group_id}" ]; then
+        group_id=$(_lookup_xpath "${xml}" '/project/parent/groupId/text()')
+      fi
+
+      packaging=$(_lookup_xpath "${xml}" '/project/packaging/text()')
+      if [ -z "${packaging}" ]; then
+        packaging=jar
+      fi
+      packaging=$(red "${packaging}")
+
+      version=$(_lookup_xpath "${xml}" '/project/version/text()')
+      if [ -z "${version}" ]; then
+        version=$(_lookup_xpath "${xml}" '/project/parent/version/text()')
+      fi
+
+      printf "%s\n" "${group_id}:${artifact_id}:${packaging}:${version}"
+    done |
+    sort
+}
+
+_lookup_xpath() {
+  local xml=$1
+  local xpath=$2
+  printf "%s\n" "${xml}" |
+    xmllint --xpath "${xpath}" - 2>/dev/null
+}
+
+
+main "$@"
