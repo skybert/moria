@@ -105,8 +105,8 @@ function convert_xsd_to_rnc() {
 
   if [ ! -e $dir/$(get_rng_file $xsd_file) ]; then
     java -jar $rngconv_home/rngconv.jar \
-      $xsd_file \
-      > ${dir}/$(get_rng_file $xsd_file)
+         "${xsd_file}" \
+         "${dir}/$(get_rng_file "${xsd_file}")"
   else
     print "RNG alreay exists, skipping"
   fi
