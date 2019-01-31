@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+## Simple command that URI decodes an URI encoded string
+
+main() {
+  encoded="$*"
+  printf '%b\n' "${encoded//%/\\x}"
+}
+
+
+main "$@"
