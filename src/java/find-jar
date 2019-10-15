@@ -3,45 +3,39 @@
 ## Command which searches all JAR files for a given class.
 ## by torstein.k.johansen at gmail.com
 
-if [ $# -lt 1 ]; then
-  echo "Usage: $(basename $0) <dir> <class>"
-  exit 1
-elif [ $# -eq 2 ]; then
-  repo_dir=$1
-  query=$2
-elif [ $# -eq 1 ]; then
-  conf_file=$HOME/.$(basename $0).conf
-  if [ -r $conf_file ]; then
-    source $conf_file
+_list_contents() {
+  local file=$1
+
+  if command -v unzip &> /dev/null ; then
+    unzip -v "${file}" |
+      awk '{print "\t"$8}'
+  elif command -v jar &> /dev/null ; then
+    jar tf "${file}"
   fi
-  query=$1
-fi
+}
 
-if [ -z ${repo_dir} ]; then
-  echo "Note: you didn't specify a repo directory, searching in" \
-    $(pwd) "instead." | fmt
-  repo_dir=$(pwd)
-fi
 
-find -L $repo_dir -name "*.jar" -type f | \
-  grep -v "\-sources.jar" | while read f; do
-
-  if [ -x /usr/bin/unzip ]; then
-    result=$(unzip -t "$f" | grep "$query")
-  elif [ -x /usr/bin/jar ]; then
-    result=$(jar tf "$f" | grep "$query")
-  elif [ $(grep "$query" "$f" | wc -l) -gt 0 ]; then
-    result="<somthing (install unzip or jar for more details)>"
+main() {
+  if [ $# -ne 2 ]; then
+    echo "Usage: $(basename "$0") <dir> <class>"
+    exit 1
+  elif [ $# -eq 2 ]; then
+    repo_dir=$1
+    query=$2
   fi
 
-  if [ $(echo "$result" | wc -c) -gt 2 ]; then
-    echo "$f contains the following matches:"
-    echo "$result" | while read el; do
-      echo '  *' $(echo $el | \
-        sed -e 's/.*:\(.*\) OK/\1/' \
-        -e 's/[/]/./g' \
-        -e 's/.class$//'
-      )
+  grep --recursive "${query}" "${repo_dir}" |
+    awk '{print $3}' |
+    sort -u |
+    while read -r f; do
+      printf "%s contains:\\n" "${f}"
+      _list_contents "${f}" |
+        grep "${query}" |
+        while read -r hit; do
+          printf "%s\\n" "${hit}" |
+            grep --color "${query}"
+        done
     done
-  fi
-done
+}
+
+main "$@"
